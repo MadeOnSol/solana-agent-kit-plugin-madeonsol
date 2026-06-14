@@ -1,11 +1,12 @@
 import { z } from "zod";
-export declare const deployerAlertsAction: {
+export declare const kolTrendingTokensAction: {
     name: string;
     similes: string[];
     description: string;
     examples: {
         input: {
-            limit: number;
+            period: string;
+            min_kols: number;
         };
         output: {
             status: string;
@@ -13,22 +14,22 @@ export declare const deployerAlertsAction: {
         explanation: string;
     }[][];
     schema: z.ZodObject<{
-        limit: z.ZodDefault<z.ZodNumber>;
-        offset: z.ZodDefault<z.ZodNumber>;
-        since: z.ZodOptional<z.ZodString>;
-        tier: z.ZodOptional<z.ZodEnum<{
-            elite: "elite";
-            good: "good";
-            moderate: "moderate";
-            rising: "rising";
-            cold: "cold";
+        period: z.ZodDefault<z.ZodEnum<{
+            "1h": "1h";
+            "5m": "5m";
+            "15m": "15m";
+            "30m": "30m";
+            "2h": "2h";
+            "4h": "4h";
+            "12h": "12h";
         }>>;
+        min_kols: z.ZodDefault<z.ZodNumber>;
+        limit: z.ZodDefault<z.ZodNumber>;
     }, z.core.$strip>;
     handler: (agent: unknown, input: {
+        period?: string;
+        min_kols?: number;
         limit?: number;
-        offset?: number;
-        since?: string;
-        tier?: "elite" | "good" | "moderate" | "rising" | "cold";
     }) => Promise<{
         status: string;
         result: any;

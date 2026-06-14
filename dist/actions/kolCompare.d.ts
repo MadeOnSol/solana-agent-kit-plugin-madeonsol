@@ -1,12 +1,11 @@
 import { z } from "zod";
-export declare const kolFeedAction: {
+export declare const kolCompareAction: {
     name: string;
     similes: string[];
     description: string;
     examples: {
         input: {
-            limit: number;
-            action: string;
+            wallets: string[];
         };
         output: {
             status: string;
@@ -14,17 +13,10 @@ export declare const kolFeedAction: {
         explanation: string;
     }[][];
     schema: z.ZodObject<{
-        limit: z.ZodDefault<z.ZodNumber>;
-        action: z.ZodOptional<z.ZodEnum<{
-            buy: "buy";
-            sell: "sell";
-        }>>;
-        kol: z.ZodOptional<z.ZodString>;
+        wallets: z.ZodArray<z.ZodString>;
     }, z.core.$strip>;
     handler: (agent: unknown, input: {
-        limit?: number;
-        action?: string;
-        kol?: string;
+        wallets: string[];
     }) => Promise<{
         status: string;
         result: any;

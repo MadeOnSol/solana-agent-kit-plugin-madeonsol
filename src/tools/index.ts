@@ -49,7 +49,7 @@ export async function initAuth(agent: Agent): Promise<void> {
 
   if (apiKey) {
     _authMode = "madeonsol";
-    _authHeaders = { Authorization: `Bearer ${apiKey}`, "User-Agent": "solana-agent-kit-plugin-madeonsol/1.9.0" };
+    _authHeaders = { Authorization: `Bearer ${apiKey}`, "User-Agent": "solana-agent-kit-plugin-madeonsol/1.10.0" };
     _paidFetch = fetch;
     console.log("[madeonsol] Using MadeOnSol API key (Bearer auth)");
   } else if (privateKey) {
@@ -544,6 +544,12 @@ export async function tokensList(
     max_mev_share_pct?: number;
     mc_change_1h_min_pct?: number;
     mc_change_1h_max_pct?: number;
+    /** v1.10 — minimum liquidity-to-MC ratio (0-1). */
+    min_liq_mc_ratio?: number;
+    /** v1.10 — maximum liquidity-to-MC ratio (0-1). */
+    max_liq_mc_ratio?: number;
+    /** v1.10 — filter by deployer tier. */
+    deployer_tier?: "elite" | "good" | "moderate" | "rising" | "cold" | "unranked";
     sort?: "mc_desc" | "mc_asc" | "last_trade_desc" | "liquidity_desc" | "cumulative_volume_desc";
     limit?: number;
     offset?: number;
