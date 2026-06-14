@@ -657,6 +657,16 @@ declare const MadeOnSolPlugin: {
             max_mev_share_pct: import("zod").ZodOptional<import("zod").ZodNumber>;
             mc_change_1h_min_pct: import("zod").ZodOptional<import("zod").ZodNumber>;
             mc_change_1h_max_pct: import("zod").ZodOptional<import("zod").ZodNumber>;
+            min_liq_mc_ratio: import("zod").ZodOptional<import("zod").ZodNumber>;
+            max_liq_mc_ratio: import("zod").ZodOptional<import("zod").ZodNumber>;
+            deployer_tier: import("zod").ZodOptional<import("zod").ZodEnum<{
+                elite: "elite";
+                good: "good";
+                moderate: "moderate";
+                rising: "rising";
+                cold: "cold";
+                unranked: "unranked";
+            }>>;
             sort: import("zod").ZodOptional<import("zod").ZodEnum<{
                 mc_desc: "mc_desc";
                 mc_asc: "mc_asc";
@@ -680,6 +690,9 @@ declare const MadeOnSolPlugin: {
             max_mev_share_pct?: number;
             mc_change_1h_min_pct?: number;
             mc_change_1h_max_pct?: number;
+            min_liq_mc_ratio?: number;
+            max_liq_mc_ratio?: number;
+            deployer_tier?: "elite" | "good" | "moderate" | "rising" | "cold" | "unranked";
             sort?: "mc_desc" | "mc_asc" | "last_trade_desc" | "liquidity_desc" | "cumulative_volume_desc";
             limit?: number;
             offset?: number;

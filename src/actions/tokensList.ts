@@ -40,6 +40,9 @@ export const tokensListAction = {
     max_mev_share_pct: z.number().min(0).max(100).optional().describe("Maximum MEV-share % of recent buys"),
     mc_change_1h_min_pct: z.number().optional().describe("Minimum 1h MC change %"),
     mc_change_1h_max_pct: z.number().optional().describe("Maximum 1h MC change %"),
+    min_liq_mc_ratio: z.number().min(0).optional().describe("Minimum liquidity-to-MC ratio (depth gauge)"),
+    max_liq_mc_ratio: z.number().min(0).optional().describe("Maximum liquidity-to-MC ratio"),
+    deployer_tier: z.enum(["elite", "good", "moderate", "rising", "cold", "unranked"]).optional().describe("Filter by deployer reputation tier"),
     sort: z
       .enum(["mc_desc", "mc_asc", "last_trade_desc", "liquidity_desc", "cumulative_volume_desc"])
       .optional()
@@ -62,6 +65,9 @@ export const tokensListAction = {
       max_mev_share_pct?: number;
       mc_change_1h_min_pct?: number;
       mc_change_1h_max_pct?: number;
+      min_liq_mc_ratio?: number;
+      max_liq_mc_ratio?: number;
+      deployer_tier?: "elite" | "good" | "moderate" | "rising" | "cold" | "unranked";
       sort?: "mc_desc" | "mc_asc" | "last_trade_desc" | "liquidity_desc" | "cumulative_volume_desc";
       limit?: number;
       offset?: number;

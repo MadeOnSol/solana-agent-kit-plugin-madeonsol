@@ -37,6 +37,16 @@ export declare const tokensListAction: {
         max_mev_share_pct: z.ZodOptional<z.ZodNumber>;
         mc_change_1h_min_pct: z.ZodOptional<z.ZodNumber>;
         mc_change_1h_max_pct: z.ZodOptional<z.ZodNumber>;
+        min_liq_mc_ratio: z.ZodOptional<z.ZodNumber>;
+        max_liq_mc_ratio: z.ZodOptional<z.ZodNumber>;
+        deployer_tier: z.ZodOptional<z.ZodEnum<{
+            elite: "elite";
+            good: "good";
+            moderate: "moderate";
+            rising: "rising";
+            cold: "cold";
+            unranked: "unranked";
+        }>>;
         sort: z.ZodOptional<z.ZodEnum<{
             mc_desc: "mc_desc";
             mc_asc: "mc_asc";
@@ -60,6 +70,9 @@ export declare const tokensListAction: {
         max_mev_share_pct?: number;
         mc_change_1h_min_pct?: number;
         mc_change_1h_max_pct?: number;
+        min_liq_mc_ratio?: number;
+        max_liq_mc_ratio?: number;
+        deployer_tier?: "elite" | "good" | "moderate" | "rising" | "cold" | "unranked";
         sort?: "mc_desc" | "mc_asc" | "last_trade_desc" | "liquidity_desc" | "cumulative_volume_desc";
         limit?: number;
         offset?: number;
