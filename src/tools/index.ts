@@ -377,6 +377,15 @@ export async function tokenCandles(agent: Agent, params: { mint: string; tf?: st
   return restQuery(agent, "GET", `/tokens/${encodeURIComponent(params.mint)}/candles${query}`);
 }
 
+/**
+ * Net buy/sell flow for a token over a rolling window (`1h` default, or `24h`). Returns unique
+ * wallet/buyer/seller counts, buy/sell trade counts, buy/sell/net SOL, and trades-per-wallet. PRO/ULTRA only.
+ */
+export async function tokenFlow(agent: Agent, params: { mint: string; window?: "1h" | "24h" }) {
+  const qs = params.window !== undefined ? `?window=${params.window}` : "";
+  return restQuery(agent, "GET", `/tokens/${encodeURIComponent(params.mint)}/flow${qs}`);
+}
+
 /** Bulk buyer-quality scoring for up to 50 mints. Shares the 5-min LRU cache with the single-mint endpoint. */
 export async function tokenBuyerQualityBatch(agent: Agent, params: { mints: string[] }) {
   return restQuery(agent, "POST", "/tokens/batch/buyer-quality", { mints: params.mints });
