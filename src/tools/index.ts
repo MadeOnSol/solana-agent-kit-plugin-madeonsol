@@ -255,6 +255,23 @@ export async function getStreamToken(agent: Agent) {
   return restQuery(agent, "POST", "/stream/token");
 }
 
+/**
+ * List your live WebSocket streaming sessions across ws-streaming and dex-stream.
+ * Returns `{ sessions, count }`; each session has `id`, `service`, `tier`, `channels[]`,
+ * `connected_at`, `remote_ip`, and `messages_sent`. PRO/ULTRA only.
+ */
+export async function streamSessions(agent: Agent) {
+  return restQuery(agent, "GET", "/stream/sessions");
+}
+
+/**
+ * Evict (kill) a live WebSocket streaming session by id. Returns `{ evicted: true, id }`;
+ * 404 if no such session, 400 if `id` is not a positive integer. PRO/ULTRA only.
+ */
+export async function streamSessionKill(agent: Agent, params: { id: string | number }) {
+  return restQuery(agent, "DELETE", `/stream/sessions/${encodeURIComponent(String(params.id))}`);
+}
+
 // ── Wallet Tracker ──
 
 export async function walletTrackerWatchlist(agent: Agent) {
@@ -389,6 +406,15 @@ export async function tokenFlow(agent: Agent, params: { mint: string; window?: "
 /** Bulk buyer-quality scoring for up to 50 mints. Shares the 5-min LRU cache with the single-mint endpoint. */
 export async function tokenBuyerQualityBatch(agent: Agent, params: { mints: string[] }) {
   return restQuery(agent, "POST", "/tokens/batch/buyer-quality", { mints: params.mints });
+}
+
+/**
+ * Bulk rug-risk/safety scoring for 1–50 mints — same per-mint shape as tokenRisk() plus an `as_of` ISO string.
+ * Returns `{ tokens, count }` where `tokens` preserves de-duplicated input order; untracked mints come back as
+ * `{ mint, error: "not_tracked" }` and do NOT fail the batch. Counts as one request against quota. PRO/ULTRA only.
+ */
+export async function tokenRiskBatch(agent: Agent, params: { mints: string[] }) {
+  return restQuery(agent, "POST", "/tokens/batch/risk", { mints: params.mints });
 }
 
 // ── Token Intelligence (/token/{mint}) ──
@@ -581,7 +607,7 @@ export async function tokensList(
     max_liq_mc_ratio?: number;
     /** v1.10 — filter by deployer tier. */
     deployer_tier?: "elite" | "good" | "moderate" | "rising" | "cold" | "unranked";
-    sort?: "mc_desc" | "mc_asc" | "last_trade_desc" | "liquidity_desc" | "cumulative_volume_desc";
+    sort?: "mc_desc" | "mc_asc" | "last_trade_desc" | "liquidity_desc" | "cumulative_volume_desc" | "mc_change_5m_desc" | "mc_change_1h_desc" | "volume_1h_desc" | "trending";
     limit?: number;
     offset?: number;
   } = {},
@@ -594,6 +620,35 @@ export async function tokensList(
   if (params.min_liq === undefined) qs.set("min_liq", "2000");
   const query = qs.toString() ? `?${qs.toString()}` : "";
   return restQuery(agent, "GET", `/tokens${query}`);
+}
+
+/**
+ * Pre-bond pump.fun tokens approaching graduation, ranked by velocity
+ * (Δprogress/min): "95% and accelerating" beats "92% stalled". Each token is
+ * enriched with its deployer's reputation tier. `progress_pct` is from on-chain
+ * real_token_reserves; `velocity_pct_per_min` is null until a 5m snapshot exists;
+ * `eta_minutes` is a linear projection. PRO/ULTRA only.
+ */
+export async function almostBonded(
+  agent: Agent,
+  params: {
+    min_progress?: number;
+    max_progress?: number;
+    min_velocity_pct_per_min?: number;
+    max_age_minutes?: number;
+    deployer_tier?: "elite" | "good" | "moderate" | "rising" | "cold" | "unranked";
+    authority_revoked?: boolean;
+    min_liq?: number;
+    sort?: "velocity_desc" | "progress_desc" | "eta_asc";
+    limit?: number;
+  } = {},
+) {
+  const qs = new URLSearchParams();
+  for (const [k, v] of Object.entries(params)) {
+    if (v !== undefined) qs.set(k, String(v));
+  }
+  const query = qs.toString() ? `?${qs.toString()}` : "";
+  return restQuery(agent, "GET", `/tokens/almost-bonded${query}`);
 }
 
 export async function copyTradeSignals(

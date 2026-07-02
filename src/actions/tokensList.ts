@@ -44,9 +44,9 @@ export const tokensListAction = {
     max_liq_mc_ratio: z.number().min(0).optional().describe("Maximum liquidity-to-MC ratio"),
     deployer_tier: z.enum(["elite", "good", "moderate", "rising", "cold", "unranked"]).optional().describe("Filter by deployer reputation tier"),
     sort: z
-      .enum(["mc_desc", "mc_asc", "last_trade_desc", "liquidity_desc", "cumulative_volume_desc"])
+      .enum(["mc_desc", "mc_asc", "last_trade_desc", "liquidity_desc", "cumulative_volume_desc", "mc_change_5m_desc", "mc_change_1h_desc", "volume_1h_desc", "trending"])
       .optional()
-      .describe("Sort order"),
+      .describe("Sort order. Momentum sorts: mc_change_5m_desc, mc_change_1h_desc, volume_1h_desc, trending (composite recent-volume × positive-momentum rank)"),
     limit: z.number().min(1).max(100).default(20).describe("Number of tokens (max 100)"),
     offset: z.number().min(0).optional().describe("Pagination offset"),
   }),
@@ -68,7 +68,7 @@ export const tokensListAction = {
       min_liq_mc_ratio?: number;
       max_liq_mc_ratio?: number;
       deployer_tier?: "elite" | "good" | "moderate" | "rising" | "cold" | "unranked";
-      sort?: "mc_desc" | "mc_asc" | "last_trade_desc" | "liquidity_desc" | "cumulative_volume_desc";
+      sort?: "mc_desc" | "mc_asc" | "last_trade_desc" | "liquidity_desc" | "cumulative_volume_desc" | "mc_change_5m_desc" | "mc_change_1h_desc" | "volume_1h_desc" | "trending";
       limit?: number;
       offset?: number;
     },

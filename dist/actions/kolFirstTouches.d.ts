@@ -19,29 +19,43 @@ export declare const kolFirstTouchesAction: {
         before: z.ZodOptional<z.ZodString>;
         kol: z.ZodOptional<z.ZodString>;
         min_kol_winrate_7d: z.ZodOptional<z.ZodNumber>;
-        min_scout_tier: z.ZodOptional<z.ZodEnum<{
-            S: "S";
-            A: "A";
-            B: "B";
-            C: "C";
-        }>>;
+        min_scout_tier: z.ZodOptional<z.ZodEnum<["S", "A", "B", "C"]>>;
         min_n_touches: z.ZodOptional<z.ZodNumber>;
-        strategy: z.ZodOptional<z.ZodEnum<{
-            scalper: "scalper";
-            day_trader: "day_trader";
-            swing_trader: "swing_trader";
-            hodler: "hodler";
-            mixed: "mixed";
-        }>>;
+        strategy: z.ZodOptional<z.ZodEnum<["scalper", "day_trader", "swing_trader", "hodler", "mixed"]>>;
         token_age_max_min: z.ZodOptional<z.ZodNumber>;
         min_first_buy_sol: z.ZodOptional<z.ZodNumber>;
         mint_suffix: z.ZodOptional<z.ZodString>;
-        preset: z.ZodOptional<z.ZodEnum<{
-            scout: "scout";
-            fresh_launch: "fresh_launch";
-        }>>;
+        preset: z.ZodOptional<z.ZodEnum<["scout", "fresh_launch"]>>;
         include: z.ZodOptional<z.ZodString>;
-    }, z.core.$strip>;
+    }, "strip", z.ZodTypeAny, {
+        limit: number;
+        before?: string | undefined;
+        since?: string | undefined;
+        kol?: string | undefined;
+        min_kol_winrate_7d?: number | undefined;
+        min_scout_tier?: "S" | "A" | "B" | "C" | undefined;
+        min_n_touches?: number | undefined;
+        strategy?: "scalper" | "day_trader" | "swing_trader" | "hodler" | "mixed" | undefined;
+        token_age_max_min?: number | undefined;
+        min_first_buy_sol?: number | undefined;
+        mint_suffix?: string | undefined;
+        preset?: "scout" | "fresh_launch" | undefined;
+        include?: string | undefined;
+    }, {
+        limit?: number | undefined;
+        before?: string | undefined;
+        since?: string | undefined;
+        kol?: string | undefined;
+        min_kol_winrate_7d?: number | undefined;
+        min_scout_tier?: "S" | "A" | "B" | "C" | undefined;
+        min_n_touches?: number | undefined;
+        strategy?: "scalper" | "day_trader" | "swing_trader" | "hodler" | "mixed" | undefined;
+        token_age_max_min?: number | undefined;
+        min_first_buy_sol?: number | undefined;
+        mint_suffix?: string | undefined;
+        preset?: "scout" | "fresh_launch" | undefined;
+        include?: string | undefined;
+    }>;
     handler: (agent: unknown, input: {
         limit?: number;
         since?: string;

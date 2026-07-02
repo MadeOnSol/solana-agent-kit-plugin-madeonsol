@@ -30,7 +30,7 @@ export async function initAuth(agent) {
     const privateKey = getConfig(agent, "SVM_PRIVATE_KEY");
     if (apiKey) {
         _authMode = "madeonsol";
-        _authHeaders = { Authorization: `Bearer ${apiKey}`, "User-Agent": "solana-agent-kit-plugin-madeonsol/1.10.0" };
+        _authHeaders = { Authorization: `Bearer ${apiKey}`, "User-Agent": "solana-agent-kit-plugin-madeonsol/1.11.0" };
         _paidFetch = fetch;
         console.log("[madeonsol] Using MadeOnSol API key (Bearer auth)");
     }
@@ -182,6 +182,21 @@ export async function testWebhook(agent, params) {
 export async function getStreamToken(agent) {
     return restQuery(agent, "POST", "/stream/token");
 }
+/**
+ * List your live WebSocket streaming sessions across ws-streaming and dex-stream.
+ * Returns `{ sessions, count }`; each session has `id`, `service`, `tier`, `channels[]`,
+ * `connected_at`, `remote_ip`, and `messages_sent`. PRO/ULTRA only.
+ */
+export async function streamSessions(agent) {
+    return restQuery(agent, "GET", "/stream/sessions");
+}
+/**
+ * Evict (kill) a live WebSocket streaming session by id. Returns `{ evicted: true, id }`;
+ * 404 if no such session, 400 if `id` is not a positive integer. PRO/ULTRA only.
+ */
+export async function streamSessionKill(agent, params) {
+    return restQuery(agent, "DELETE", `/stream/sessions/${encodeURIComponent(String(params.id))}`);
+}
 // ── Wallet Tracker ──
 export async function walletTrackerWatchlist(agent) {
     return restQuery(agent, "GET", "/wallet-tracker/watchlist");
@@ -260,9 +275,43 @@ export async function tokenCapTable(agent, params) {
 export async function tokenBuyerQuality(agent, params) {
     return restQuery(agent, "GET", `/tokens/${encodeURIComponent(params.mint)}/buyer-quality`);
 }
+/** Transparent 0–100 rug-risk/safety score (higher = riskier) with band, explainable factors, and raw inputs. PRO/ULTRA only. */
+export async function tokenRisk(agent, params) {
+    return restQuery(agent, "GET", `/tokens/${encodeURIComponent(params.mint)}/risk`);
+}
+/** Historical OHLCV candles (1m/5m/15m/1h/4h/1d) aggregated from the trade firehose. PRO=OHLCV 30d; ULTRA=+net flow, liquidity delta, full history. PRO/ULTRA only. */
+export async function tokenCandles(agent, params) {
+    const qs = new URLSearchParams();
+    if (params.tf !== undefined)
+        qs.set("tf", params.tf);
+    if (params.limit !== undefined)
+        qs.set("limit", String(params.limit));
+    if (params.from !== undefined)
+        qs.set("from", params.from);
+    if (params.to !== undefined)
+        qs.set("to", params.to);
+    const query = qs.toString() ? `?${qs.toString()}` : "";
+    return restQuery(agent, "GET", `/tokens/${encodeURIComponent(params.mint)}/candles${query}`);
+}
+/**
+ * Net buy/sell flow for a token over a rolling window (`1h` default, or `24h`). Returns unique
+ * wallet/buyer/seller counts, buy/sell trade counts, buy/sell/net SOL, and trades-per-wallet. PRO/ULTRA only.
+ */
+export async function tokenFlow(agent, params) {
+    const qs = params.window !== undefined ? `?window=${params.window}` : "";
+    return restQuery(agent, "GET", `/tokens/${encodeURIComponent(params.mint)}/flow${qs}`);
+}
 /** Bulk buyer-quality scoring for up to 50 mints. Shares the 5-min LRU cache with the single-mint endpoint. */
 export async function tokenBuyerQualityBatch(agent, params) {
     return restQuery(agent, "POST", "/tokens/batch/buyer-quality", { mints: params.mints });
+}
+/**
+ * Bulk rug-risk/safety scoring for 1–50 mints — same per-mint shape as tokenRisk() plus an `as_of` ISO string.
+ * Returns `{ tokens, count }` where `tokens` preserves de-duplicated input order; untracked mints come back as
+ * `{ mint, error: "not_tracked" }` and do NOT fail the batch. Counts as one request against quota. PRO/ULTRA only.
+ */
+export async function tokenRiskBatch(agent, params) {
+    return restQuery(agent, "POST", "/tokens/batch/risk", { mints: params.mints });
 }
 // ── Token Intelligence (/token/{mint}) ──
 /** Comprehensive per-mint snapshot: price, MC, 24h volume, deployer reputation, KOL activity, age, blacklist status. */
@@ -275,19 +324,19 @@ export async function tokenBatch(agent, params) {
 }
 // ── Copy-Trade Rules (PRO/ULTRA) ──
 export async function copyTradeList(agent) {
-    return restQuery(agent, "GET", "/copy-trade/rules");
+    return restQuery(agent, "GET", "/copytrade/subscriptions");
 }
 export async function copyTradeCreate(agent, params) {
-    return restQuery(agent, "POST", "/copy-trade/rules", params);
+    return restQuery(agent, "POST", "/copytrade/subscriptions", params);
 }
 export async function copyTradeGet(agent, params) {
-    return restQuery(agent, "GET", `/copy-trade/rules/${encodeURIComponent(params.rule_id)}`);
+    return restQuery(agent, "GET", `/copytrade/subscriptions/${encodeURIComponent(params.rule_id)}`);
 }
 export async function copyTradeUpdate(agent, params) {
-    return restQuery(agent, "PATCH", `/copy-trade/rules/${encodeURIComponent(params.rule_id)}`, params.updates);
+    return restQuery(agent, "PATCH", `/copytrade/subscriptions/${encodeURIComponent(params.rule_id)}`, params.updates);
 }
 export async function copyTradeDelete(agent, params) {
-    return restQuery(agent, "DELETE", `/copy-trade/rules/${encodeURIComponent(params.rule_id)}`);
+    return restQuery(agent, "DELETE", `/copytrade/subscriptions/${encodeURIComponent(params.rule_id)}`);
 }
 // ── Coordination Alerts (PRO/ULTRA, v1.1) ──
 export async function coordinationAlertsList(agent) {
@@ -353,6 +402,22 @@ export async function tokensList(agent, params = {}) {
     const query = qs.toString() ? `?${qs.toString()}` : "";
     return restQuery(agent, "GET", `/tokens${query}`);
 }
+/**
+ * Pre-bond pump.fun tokens approaching graduation, ranked by velocity
+ * (Δprogress/min): "95% and accelerating" beats "92% stalled". Each token is
+ * enriched with its deployer's reputation tier. `progress_pct` is from on-chain
+ * real_token_reserves; `velocity_pct_per_min` is null until a 5m snapshot exists;
+ * `eta_minutes` is a linear projection. PRO/ULTRA only.
+ */
+export async function almostBonded(agent, params = {}) {
+    const qs = new URLSearchParams();
+    for (const [k, v] of Object.entries(params)) {
+        if (v !== undefined)
+            qs.set(k, String(v));
+    }
+    const query = qs.toString() ? `?${qs.toString()}` : "";
+    return restQuery(agent, "GET", `/tokens/almost-bonded${query}`);
+}
 export async function copyTradeSignals(agent, params = {}) {
     const qs = new URLSearchParams();
     for (const [k, v] of Object.entries(params)) {
@@ -360,7 +425,7 @@ export async function copyTradeSignals(agent, params = {}) {
             qs.set(k, String(v));
     }
     const query = qs.toString() ? `?${qs.toString()}` : "";
-    return restQuery(agent, "GET", `/copy-trade/signals${query}`);
+    return restQuery(agent, "GET", `/copytrade/signals${query}`);
 }
 // ── Price Alerts (PRO/ULTRA, v1.9) ──
 export async function priceAlertsList(agent) {

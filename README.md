@@ -9,8 +9,12 @@
 
 [Solana Agent Kit](https://github.com/sendaifun/solana-agent-kit) plugin for [MadeOnSol](https://madeonsol.com) — Solana KOL intelligence, deployer analytics, and wallet tracking.
 
-> Real-time Solana trading intelligence: track 1,069 KOL wallets with <3s latency, score 23,000+ Pump.fun deployers, surface deshred deploy signals ~500ms before on-chain confirmation, detect multi-KOL coordination, and stream every DEX trade. Free tier: 200 requests/day at [madeonsol.com/pricing](https://madeonsol.com/pricing) — no credit card required.
+> Real-time Solana trading intelligence: track 1,069 KOL wallets with <3s latency, score 23,000+ Pump.fun deployers, surface deshred deploy signals ~500ms before on-chain confirmation, detect multi-KOL coordination, and stream every DEX trade. Free tier: 200 requests/day, every endpoint — no signup payment. Get a key at [madeonsol.com/pricing](https://madeonsol.com/pricing).
 
+> **New in 1.15.0** — **Batch risk scoring + WebSocket session control.** New tool `tokenRiskBatch()` + action `MADEONSOL_TOKEN_RISK_BATCH_ACTION` — bulk 0–100 rug-risk/safety scoring for 1–50 mints in one call (`{ tokens, count }`, same per-mint shape as `tokenRisk()` plus an `as_of` ISO string; untracked mints come back as `{ mint, error: "not_tracked" }` without failing the batch; counts as one request). New tools `streamSessions()` / `streamSessionKill({ id })` + actions `MADEONSOL_STREAM_SESSIONS_ACTION` / `MADEONSOL_STREAM_SESSION_KILL_ACTION` — list your live ws-streaming/dex-stream sessions (`id`, `service`, `tier`, `channels[]`, `connected_at`, `remote_ip`, `messages_sent`) and evict one by id to free a connection slot. PRO/ULTRA only.
+>
+> **New in 1.14.0** — **Almost-bonded discovery + trending sorts.** New tool `almostBonded()` + action `MADEONSOL_ALMOST_BONDED_ACTION` — pre-bond pump.fun tokens near graduation, ranked by velocity (Δprogress/min): "95% and accelerating" beats "92% stalled". Each token carries `progress_pct`, `velocity_pct_per_min`, `eta_minutes`, `stalled`, `real_sol_reserves`, `market_cap_usd`, `liquidity_usd`, `authorities_revoked`, `deployer_tier`, and `age_minutes`. Params: `min_progress`, `max_progress`, `min_velocity_pct_per_min`, `max_age_minutes`, `deployer_tier`, `authority_revoked`, `min_liq`, `sort` (velocity_desc / progress_desc / eta_asc), `limit`. PRO/ULTRA only. Plus `tokensList({ sort })` gains four momentum sorts — `mc_change_5m_desc`, `mc_change_1h_desc`, `volume_1h_desc`, and `trending` (composite recent-volume × positive-momentum rank).
+>
 > **New in 1.13.0** — **Token net flow.** New tool `tokenFlow()` + action `MADEONSOL_TOKEN_FLOW_ACTION` — net buy/sell flow over a rolling window (`1h` default, or `24h`): `unique_wallets`, `unique_buyers`, `unique_sellers`, `buy_count`, `sell_count`, `total_trades`, `buy_sol`, `sell_sol`, `net_sol`, `trades_per_wallet`. PRO/ULTRA only. Deployer alerts now also surface `deployer_sol_balance` — the deployer wallet's SOL balance at alert time (`null` for historical rows).
 >
 > **New in 1.12.0** — **Token OHLCV candles.** New tool `tokenCandles()` + action `MADEONSOL_TOKEN_CANDLES_ACTION` — historical price candles (1m/5m/15m/1h/4h/1d) aggregated from the on-chain trade firehose. Each candle has `t/open/high/low/close/volume_usd/trades/market_cap_usd`. PRO returns OHLCV for the last 30 days; ULTRA adds buy/sell volume + count splits, net flow, MEV volume, open/close liquidity, high/low MC, and full history. PRO/ULTRA only.
@@ -103,12 +107,16 @@ const events = await agent.methods.walletTrackerTrades(agent, { limit: 50 });
 | `MADEONSOL_WALLET_TRACKER_TRADES_ACTION` | "wallet tracker trades", "watchlist activity" |
 | `MADEONSOL_WALLET_TRACKER_SUMMARY_ACTION` | "wallet tracker summary", "tracked wallet stats" |
 | `MADEONSOL_ME_ACTION` | "my api account", "api quota", "remaining requests" — tier + quota introspection (new in 1.7) |
-| `MADEONSOL_TOKENS_LIST_ACTION` | "filter tokens", "tokens by market cap", "scan tokens" — filtered/sortable token directory, PRO+ (new in 1.7) |
+| `MADEONSOL_TOKENS_LIST_ACTION` | "filter tokens", "tokens by market cap", "scan tokens" — filtered/sortable token directory + momentum/trending sorts, PRO+ (new in 1.7) |
+| `MADEONSOL_ALMOST_BONDED_ACTION` | **New 1.14** · "almost bonded", "about to graduate", "near graduation" — pre-bond pump.fun tokens ranked by velocity (Δprogress/min): progress, ETA, stalled, deployer tier (PRO+) |
 | `MADEONSOL_WALLET_STATS_ACTION` | **New 1.8** · "wallet stats", "wallet info", "check wallet" — aggregate 90d stats + cross-product flags (KOL/alpha/deployer) for any Solana wallet (PRO+) |
 | `MADEONSOL_WALLET_PNL_ACTION` | **New 1.8** · "wallet pnl", "wallet profit", "wallet performance" — FIFO cost-basis PnL with profit factor, drawdown, daily curve, closed + open positions (PRO+) |
 | `MADEONSOL_WALLET_POSITIONS_ACTION` | **New 1.8** · "wallet positions", "wallet bags", "open positions" — open lots with live unrealized SOL (PRO+) |
 | `MADEONSOL_WALLET_TRADES_ACTION` | **New 1.8** · "wallet trades", "wallet history" — cursor-paginated raw trades with filters (PRO+) |
 | `MADEONSOL_TOKEN_FLOW_ACTION` | **New 1.13** · "token flow", "net flow", "buy/sell pressure" — net buy/sell flow over a 1h/24h window (PRO+) |
+| `MADEONSOL_TOKEN_RISK_BATCH_ACTION` | **New 1.15** · "batch token risk", "bulk rug risk", "score many tokens" — rug-risk scoring for 1–50 mints in one call; untracked mints don't fail the batch (PRO+) |
+| `MADEONSOL_STREAM_SESSIONS_ACTION` | **New 1.15** · "list stream sessions", "live websocket sessions", "active ws sessions" — your live ws-streaming/dex-stream sessions (PRO+) |
+| `MADEONSOL_STREAM_SESSION_KILL_ACTION` | **New 1.15** · "kill stream session", "evict session", "free a connection slot" — evict a live streaming session by id (PRO+) |
 
 ## Additional methods (v1.0+)
 
@@ -130,8 +138,10 @@ await agent.methods.alphaLinked(agent, { wallet: "WALLET" });           // ULTRA
 await agent.methods.tokenCapTable(agent, { mint: "MINT" });             // PRO=10, ULTRA=20 first non-deployer buyers
 await agent.methods.tokenBuyerQuality(agent, { mint: "MINT" });         // 0–100 buyer-quality score (5-min cached)
 await agent.methods.tokenRisk(agent, { mint: "MINT" });                 // PRO+ 0–100 rug-risk/safety score + band + factors
+await agent.methods.tokenRiskBatch(agent, { mints: ["MINT_A", "MINT_B"] }); // PRO+ bulk rug-risk for 1–50 mints → { tokens, count }; one request
 await agent.methods.tokenCandles(agent, { mint: "MINT", tf: "1h" });    // PRO+ OHLCV candles (1m–1d); ULTRA=+net flow, liquidity, full history
 await agent.methods.tokenFlow(agent, { mint: "MINT", window: "24h" });  // PRO+ net buy/sell flow (1h/24h): unique wallets, buy/sell/net SOL, trades-per-wallet
+await agent.methods.almostBonded(agent, { min_progress: 90, sort: "eta_asc" }); // PRO+ pre-bond pump.fun tokens by velocity: progress, ETA, stalled, deployer tier
 ```
 
 > Deployer alerts (`MADEONSOL_DEPLOYER_ALERTS_ACTION` / `agent.methods.deployerAlerts()`) now include `deployer_sol_balance` — the deployer wallet's SOL balance at alert time (`null` for historical rows).
@@ -153,6 +163,17 @@ await agent.methods.copyTradeCreate(agent, {
 });
 await agent.methods.copyTradeSignals(agent, { limit: 50 });             // up to 7 days
 ```
+
+### Streaming Sessions *(new in 1.15)*
+
+List and kill your live WebSocket streaming sessions (ws-streaming + dex-stream). Handy when a ghost socket is holding a connection slot. PRO/ULTRA only.
+
+```ts
+const { sessions, count } = await agent.methods.streamSessions(agent);   // id, service, tier, channels[], connected_at, remote_ip, messages_sent
+await agent.methods.streamSessionKill(agent, { id: "123" });             // → { evicted: true, id }
+```
+
+Also exposed as `MADEONSOL_STREAM_SESSIONS_ACTION` and `MADEONSOL_STREAM_SESSION_KILL_ACTION`.
 
 ### KOL Coordination Alerts (PRO/ULTRA — v1.1 push signals)
 
@@ -277,8 +298,8 @@ console.log(lastRateLimit); // { limit: "10000", remaining: "9999", reset: "..."
 | Tier | Price | Wallets tracked | Requests/day |
 |------|-------|-----------------|--------------|
 | BASIC (free) | $0 | 10 | 200 |
-| PRO | $49/mo ($490/yr) | 50 | 10,000 |
-| ULTRA | $149/mo ($1,490/yr) | 100 + WS events | 100,000 |
+| PRO | €43/mo (€430/yr) ≈ $49 | 50 | 10,000 |
+| ULTRA | €131/mo (€1310/yr) ≈ $149 | 100 + WS events | 100,000 |
 
 Free tier returns the full REST response shape on every endpoint — real wallets, TX signatures, full precision. Paid tiers unlock webhooks, WebSockets, rule engines, and ULTRA-only data depth. Get a key at [madeonsol.com/pricing](https://madeonsol.com/pricing).
 

@@ -16,14 +16,18 @@ export declare const deployerAlertsAction: {
         limit: z.ZodDefault<z.ZodNumber>;
         offset: z.ZodDefault<z.ZodNumber>;
         since: z.ZodOptional<z.ZodString>;
-        tier: z.ZodOptional<z.ZodEnum<{
-            elite: "elite";
-            good: "good";
-            moderate: "moderate";
-            rising: "rising";
-            cold: "cold";
-        }>>;
-    }, z.core.$strip>;
+        tier: z.ZodOptional<z.ZodEnum<["elite", "good", "moderate", "rising", "cold"]>>;
+    }, "strip", z.ZodTypeAny, {
+        limit: number;
+        offset: number;
+        since?: string | undefined;
+        tier?: "elite" | "good" | "moderate" | "rising" | "cold" | undefined;
+    }, {
+        limit?: number | undefined;
+        since?: string | undefined;
+        offset?: number | undefined;
+        tier?: "elite" | "good" | "moderate" | "rising" | "cold" | undefined;
+    }>;
     handler: (agent: unknown, input: {
         limit?: number;
         offset?: number;

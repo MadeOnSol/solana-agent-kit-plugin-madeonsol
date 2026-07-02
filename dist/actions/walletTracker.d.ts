@@ -10,7 +10,7 @@ export declare const walletTrackerWatchlistAction: {
         };
         explanation: string;
     }[][];
-    schema: z.ZodObject<{}, z.core.$strip>;
+    schema: z.ZodObject<{}, "strip", z.ZodTypeAny, {}, {}>;
     handler: (agent: unknown) => Promise<{
         status: string;
         result: any;
@@ -38,7 +38,13 @@ export declare const walletTrackerAddAction: {
     schema: z.ZodObject<{
         wallet_address: z.ZodString;
         label: z.ZodOptional<z.ZodString>;
-    }, z.core.$strip>;
+    }, "strip", z.ZodTypeAny, {
+        wallet_address: string;
+        label?: string | undefined;
+    }, {
+        wallet_address: string;
+        label?: string | undefined;
+    }>;
     handler: (agent: unknown, input: {
         wallet_address: string;
         label?: string;
@@ -67,7 +73,11 @@ export declare const walletTrackerRemoveAction: {
     }[][];
     schema: z.ZodObject<{
         wallet_address: z.ZodString;
-    }, z.core.$strip>;
+    }, "strip", z.ZodTypeAny, {
+        wallet_address: string;
+    }, {
+        wallet_address: string;
+    }>;
     handler: (agent: unknown, input: {
         wallet_address: string;
     }) => Promise<{
@@ -95,19 +105,23 @@ export declare const walletTrackerTradesAction: {
     }[][];
     schema: z.ZodObject<{
         wallet: z.ZodOptional<z.ZodString>;
-        action: z.ZodOptional<z.ZodEnum<{
-            buy: "buy";
-            sell: "sell";
-            transfer_in: "transfer_in";
-            transfer_out: "transfer_out";
-        }>>;
-        event_type: z.ZodOptional<z.ZodEnum<{
-            swap: "swap";
-            transfer: "transfer";
-        }>>;
+        action: z.ZodOptional<z.ZodEnum<["buy", "sell", "transfer_in", "transfer_out"]>>;
+        event_type: z.ZodOptional<z.ZodEnum<["swap", "transfer"]>>;
         limit: z.ZodDefault<z.ZodNumber>;
         before: z.ZodOptional<z.ZodNumber>;
-    }, z.core.$strip>;
+    }, "strip", z.ZodTypeAny, {
+        limit: number;
+        wallet?: string | undefined;
+        action?: "buy" | "sell" | "transfer_in" | "transfer_out" | undefined;
+        event_type?: "swap" | "transfer" | undefined;
+        before?: number | undefined;
+    }, {
+        limit?: number | undefined;
+        wallet?: string | undefined;
+        action?: "buy" | "sell" | "transfer_in" | "transfer_out" | undefined;
+        event_type?: "swap" | "transfer" | undefined;
+        before?: number | undefined;
+    }>;
     handler: (agent: unknown, input: {
         wallet?: string;
         action?: string;
@@ -138,13 +152,15 @@ export declare const walletTrackerSummaryAction: {
         explanation: string;
     }[][];
     schema: z.ZodObject<{
-        period: z.ZodDefault<z.ZodEnum<{
-            "24h": "24h";
-            "7d": "7d";
-            "30d": "30d";
-        }>>;
+        period: z.ZodDefault<z.ZodEnum<["24h", "7d", "30d"]>>;
         wallet: z.ZodOptional<z.ZodString>;
-    }, z.core.$strip>;
+    }, "strip", z.ZodTypeAny, {
+        period: "24h" | "7d" | "30d";
+        wallet?: string | undefined;
+    }, {
+        period?: "24h" | "7d" | "30d" | undefined;
+        wallet?: string | undefined;
+    }>;
     handler: (agent: unknown, input: {
         period?: string;
         wallet?: string;

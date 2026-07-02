@@ -14,7 +14,11 @@ export declare const walletStatsAction: {
     }[][];
     schema: z.ZodObject<{
         address: z.ZodString;
-    }, z.core.$strip>;
+    }, "strip", z.ZodTypeAny, {
+        address: string;
+    }, {
+        address: string;
+    }>;
     handler: (agent: unknown, input: {
         address: string;
     }) => Promise<{
@@ -42,7 +46,11 @@ export declare const walletPnlAction: {
     }[][];
     schema: z.ZodObject<{
         address: z.ZodString;
-    }, z.core.$strip>;
+    }, "strip", z.ZodTypeAny, {
+        address: string;
+    }, {
+        address: string;
+    }>;
     handler: (agent: unknown, input: {
         address: string;
     }) => Promise<{
@@ -70,7 +78,11 @@ export declare const walletPositionsAction: {
     }[][];
     schema: z.ZodObject<{
         address: z.ZodString;
-    }, z.core.$strip>;
+    }, "strip", z.ZodTypeAny, {
+        address: string;
+    }, {
+        address: string;
+    }>;
     handler: (agent: unknown, input: {
         address: string;
     }) => Promise<{
@@ -102,14 +114,27 @@ export declare const walletTradesAction: {
         address: z.ZodString;
         limit: z.ZodOptional<z.ZodNumber>;
         cursor: z.ZodOptional<z.ZodString>;
-        action: z.ZodOptional<z.ZodEnum<{
-            buy: "buy";
-            sell: "sell";
-        }>>;
+        action: z.ZodOptional<z.ZodEnum<["buy", "sell"]>>;
         token_mint: z.ZodOptional<z.ZodString>;
         since: z.ZodOptional<z.ZodNumber>;
         until: z.ZodOptional<z.ZodNumber>;
-    }, z.core.$strip>;
+    }, "strip", z.ZodTypeAny, {
+        address: string;
+        limit?: number | undefined;
+        action?: "buy" | "sell" | undefined;
+        cursor?: string | undefined;
+        token_mint?: string | undefined;
+        since?: number | undefined;
+        until?: number | undefined;
+    }, {
+        address: string;
+        limit?: number | undefined;
+        action?: "buy" | "sell" | undefined;
+        cursor?: string | undefined;
+        token_mint?: string | undefined;
+        since?: number | undefined;
+        until?: number | undefined;
+    }>;
     handler: (agent: unknown, input: {
         address: string;
         limit?: number;

@@ -113,6 +113,19 @@ export declare function testWebhook(agent: Agent, params: {
     webhook_id: number;
 }): Promise<any>;
 export declare function getStreamToken(agent: Agent): Promise<any>;
+/**
+ * List your live WebSocket streaming sessions across ws-streaming and dex-stream.
+ * Returns `{ sessions, count }`; each session has `id`, `service`, `tier`, `channels[]`,
+ * `connected_at`, `remote_ip`, and `messages_sent`. PRO/ULTRA only.
+ */
+export declare function streamSessions(agent: Agent): Promise<any>;
+/**
+ * Evict (kill) a live WebSocket streaming session by id. Returns `{ evicted: true, id }`;
+ * 404 if no such session, 400 if `id` is not a positive integer. PRO/ULTRA only.
+ */
+export declare function streamSessionKill(agent: Agent, params: {
+    id: string | number;
+}): Promise<any>;
 export declare function walletTrackerWatchlist(agent: Agent): Promise<any>;
 export declare function walletTrackerAdd(agent: Agent, params: {
     wallet_address: string;
@@ -167,8 +180,36 @@ export declare function tokenCapTable(agent: Agent, params: {
 export declare function tokenBuyerQuality(agent: Agent, params: {
     mint: string;
 }): Promise<any>;
+/** Transparent 0–100 rug-risk/safety score (higher = riskier) with band, explainable factors, and raw inputs. PRO/ULTRA only. */
+export declare function tokenRisk(agent: Agent, params: {
+    mint: string;
+}): Promise<any>;
+/** Historical OHLCV candles (1m/5m/15m/1h/4h/1d) aggregated from the trade firehose. PRO=OHLCV 30d; ULTRA=+net flow, liquidity delta, full history. PRO/ULTRA only. */
+export declare function tokenCandles(agent: Agent, params: {
+    mint: string;
+    tf?: string;
+    limit?: number;
+    from?: string;
+    to?: string;
+}): Promise<any>;
+/**
+ * Net buy/sell flow for a token over a rolling window (`1h` default, or `24h`). Returns unique
+ * wallet/buyer/seller counts, buy/sell trade counts, buy/sell/net SOL, and trades-per-wallet. PRO/ULTRA only.
+ */
+export declare function tokenFlow(agent: Agent, params: {
+    mint: string;
+    window?: "1h" | "24h";
+}): Promise<any>;
 /** Bulk buyer-quality scoring for up to 50 mints. Shares the 5-min LRU cache with the single-mint endpoint. */
 export declare function tokenBuyerQualityBatch(agent: Agent, params: {
+    mints: string[];
+}): Promise<any>;
+/**
+ * Bulk rug-risk/safety scoring for 1–50 mints — same per-mint shape as tokenRisk() plus an `as_of` ISO string.
+ * Returns `{ tokens, count }` where `tokens` preserves de-duplicated input order; untracked mints come back as
+ * `{ mint, error: "not_tracked" }` and do NOT fail the batch. Counts as one request against quota. PRO/ULTRA only.
+ */
+export declare function tokenRiskBatch(agent: Agent, params: {
     mints: string[];
 }): Promise<any>;
 /** Comprehensive per-mint snapshot: price, MC, 24h volume, deployer reputation, KOL activity, age, blacklist status. */
@@ -181,12 +222,18 @@ export declare function tokenBatch(agent: Agent, params: {
 }): Promise<any>;
 export declare function copyTradeList(agent: Agent): Promise<any>;
 export declare function copyTradeCreate(agent: Agent, params: {
-    name: string;
-    source_wallet: string;
-    is_active?: boolean;
+    /** 1-50 wallets to copy trades from. */
+    source_wallets: string[];
+    /** Required. Fixed SOL amount, proportional multiplier, or percent of source — per sizing_mode. */
+    sizing_amount: number;
+    name?: string;
+    min_trade_sol?: number;
+    only_action?: "buy" | "sell" | "both";
+    sizing_mode?: "fixed" | "proportional" | "percent_source";
+    delivery_mode?: "webhook" | "websocket" | "both";
     webhook_url?: string;
-    delivery?: "webhook" | "websocket" | "both";
-    filters?: Record<string, unknown>;
+    min_mc_usd?: number | null;
+    max_mc_usd?: number | null;
 }): Promise<any>;
 export declare function copyTradeGet(agent: Agent, params: {
     rule_id: string;
@@ -285,9 +332,27 @@ export declare function tokensList(agent: Agent, params?: {
     max_liq_mc_ratio?: number;
     /** v1.10 — filter by deployer tier. */
     deployer_tier?: "elite" | "good" | "moderate" | "rising" | "cold" | "unranked";
-    sort?: "mc_desc" | "mc_asc" | "last_trade_desc" | "liquidity_desc" | "cumulative_volume_desc";
+    sort?: "mc_desc" | "mc_asc" | "last_trade_desc" | "liquidity_desc" | "cumulative_volume_desc" | "mc_change_5m_desc" | "mc_change_1h_desc" | "volume_1h_desc" | "trending";
     limit?: number;
     offset?: number;
+}): Promise<any>;
+/**
+ * Pre-bond pump.fun tokens approaching graduation, ranked by velocity
+ * (Δprogress/min): "95% and accelerating" beats "92% stalled". Each token is
+ * enriched with its deployer's reputation tier. `progress_pct` is from on-chain
+ * real_token_reserves; `velocity_pct_per_min` is null until a 5m snapshot exists;
+ * `eta_minutes` is a linear projection. PRO/ULTRA only.
+ */
+export declare function almostBonded(agent: Agent, params?: {
+    min_progress?: number;
+    max_progress?: number;
+    min_velocity_pct_per_min?: number;
+    max_age_minutes?: number;
+    deployer_tier?: "elite" | "good" | "moderate" | "rising" | "cold" | "unranked";
+    authority_revoked?: boolean;
+    min_liq?: number;
+    sort?: "velocity_desc" | "progress_desc" | "eta_asc";
+    limit?: number;
 }): Promise<any>;
 export declare function copyTradeSignals(agent: Agent, params?: {
     rule_id?: string;

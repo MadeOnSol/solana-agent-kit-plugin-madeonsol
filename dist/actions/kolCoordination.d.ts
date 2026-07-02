@@ -14,15 +14,18 @@ export declare const kolCoordinationAction: {
         explanation: string;
     }[][];
     schema: z.ZodObject<{
-        period: z.ZodDefault<z.ZodEnum<{
-            "24h": "24h";
-            "1h": "1h";
-            "6h": "6h";
-            "7d": "7d";
-        }>>;
+        period: z.ZodDefault<z.ZodEnum<["1h", "6h", "24h", "7d"]>>;
         min_kols: z.ZodDefault<z.ZodNumber>;
         limit: z.ZodDefault<z.ZodNumber>;
-    }, z.core.$strip>;
+    }, "strip", z.ZodTypeAny, {
+        period: "1h" | "24h" | "6h" | "7d";
+        min_kols: number;
+        limit: number;
+    }, {
+        period?: "1h" | "24h" | "6h" | "7d" | undefined;
+        min_kols?: number | undefined;
+        limit?: number | undefined;
+    }>;
     handler: (agent: unknown, input: {
         period?: string;
         min_kols?: number;

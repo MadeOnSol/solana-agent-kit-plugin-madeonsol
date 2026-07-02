@@ -1,12 +1,12 @@
 import { z } from "zod";
-export declare const kolPnlAction: {
+export declare const tokenFlowAction: {
     name: string;
     similes: string[];
     description: string;
     examples: {
         input: {
-            wallet: string;
-            period: string;
+            mint: string;
+            window: string;
         };
         output: {
             status: string;
@@ -14,18 +14,18 @@ export declare const kolPnlAction: {
         explanation: string;
     }[][];
     schema: z.ZodObject<{
-        wallet: z.ZodString;
-        period: z.ZodDefault<z.ZodEnum<["7d", "30d", "90d", "180d"]>>;
+        mint: z.ZodString;
+        window: z.ZodOptional<z.ZodEnum<["1h", "24h"]>>;
     }, "strip", z.ZodTypeAny, {
-        period: "7d" | "30d" | "90d" | "180d";
-        wallet: string;
+        mint: string;
+        window?: "1h" | "24h" | undefined;
     }, {
-        wallet: string;
-        period?: "7d" | "30d" | "90d" | "180d" | undefined;
+        mint: string;
+        window?: "1h" | "24h" | undefined;
     }>;
     handler: (agent: unknown, input: {
-        wallet: string;
-        period?: string;
+        mint: string;
+        window?: "1h" | "24h";
     }) => Promise<{
         status: string;
         result: any;

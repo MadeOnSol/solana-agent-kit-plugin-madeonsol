@@ -15,12 +15,17 @@ export declare const kolFeedAction: {
     }[][];
     schema: z.ZodObject<{
         limit: z.ZodDefault<z.ZodNumber>;
-        action: z.ZodOptional<z.ZodEnum<{
-            buy: "buy";
-            sell: "sell";
-        }>>;
+        action: z.ZodOptional<z.ZodEnum<["buy", "sell"]>>;
         kol: z.ZodOptional<z.ZodString>;
-    }, z.core.$strip>;
+    }, "strip", z.ZodTypeAny, {
+        limit: number;
+        action?: "buy" | "sell" | undefined;
+        kol?: string | undefined;
+    }, {
+        limit?: number | undefined;
+        action?: "buy" | "sell" | undefined;
+        kol?: string | undefined;
+    }>;
     handler: (agent: unknown, input: {
         limit?: number;
         action?: string;

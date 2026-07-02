@@ -21,15 +21,7 @@ export declare const tokensListAction: {
         max_mc: z.ZodOptional<z.ZodNumber>;
         min_liq: z.ZodOptional<z.ZodNumber>;
         active_h: z.ZodOptional<z.ZodNumber>;
-        primary_dex: z.ZodOptional<z.ZodEnum<{
-            pumpfun: "pumpfun";
-            pumpswap: "pumpswap";
-            raydium: "raydium";
-            meteora: "meteora";
-            orca: "orca";
-            letsbonk: "letsbonk";
-            other: "other";
-        }>>;
+        primary_dex: z.ZodOptional<z.ZodEnum<["pumpfun", "pumpswap", "raydium", "meteora", "orca", "letsbonk", "other"]>>;
         authority_revoked: z.ZodOptional<z.ZodBoolean>;
         exclude_token2022: z.ZodOptional<z.ZodBoolean>;
         min_lp_burnt_pct: z.ZodOptional<z.ZodNumber>;
@@ -39,24 +31,49 @@ export declare const tokensListAction: {
         mc_change_1h_max_pct: z.ZodOptional<z.ZodNumber>;
         min_liq_mc_ratio: z.ZodOptional<z.ZodNumber>;
         max_liq_mc_ratio: z.ZodOptional<z.ZodNumber>;
-        deployer_tier: z.ZodOptional<z.ZodEnum<{
-            elite: "elite";
-            good: "good";
-            moderate: "moderate";
-            rising: "rising";
-            cold: "cold";
-            unranked: "unranked";
-        }>>;
-        sort: z.ZodOptional<z.ZodEnum<{
-            mc_desc: "mc_desc";
-            mc_asc: "mc_asc";
-            last_trade_desc: "last_trade_desc";
-            liquidity_desc: "liquidity_desc";
-            cumulative_volume_desc: "cumulative_volume_desc";
-        }>>;
+        deployer_tier: z.ZodOptional<z.ZodEnum<["elite", "good", "moderate", "rising", "cold", "unranked"]>>;
+        sort: z.ZodOptional<z.ZodEnum<["mc_desc", "mc_asc", "last_trade_desc", "liquidity_desc", "cumulative_volume_desc", "mc_change_5m_desc", "mc_change_1h_desc", "volume_1h_desc", "trending"]>>;
         limit: z.ZodDefault<z.ZodNumber>;
         offset: z.ZodOptional<z.ZodNumber>;
-    }, z.core.$strip>;
+    }, "strip", z.ZodTypeAny, {
+        limit: number;
+        sort?: "mc_desc" | "mc_asc" | "last_trade_desc" | "liquidity_desc" | "cumulative_volume_desc" | "mc_change_5m_desc" | "mc_change_1h_desc" | "volume_1h_desc" | "trending" | undefined;
+        min_mc?: number | undefined;
+        max_mc?: number | undefined;
+        min_liq?: number | undefined;
+        active_h?: number | undefined;
+        primary_dex?: "pumpfun" | "pumpswap" | "raydium" | "meteora" | "orca" | "letsbonk" | "other" | undefined;
+        authority_revoked?: boolean | undefined;
+        exclude_token2022?: boolean | undefined;
+        min_lp_burnt_pct?: number | undefined;
+        min_volume_1h_usd?: number | undefined;
+        max_mev_share_pct?: number | undefined;
+        mc_change_1h_min_pct?: number | undefined;
+        mc_change_1h_max_pct?: number | undefined;
+        min_liq_mc_ratio?: number | undefined;
+        max_liq_mc_ratio?: number | undefined;
+        deployer_tier?: "elite" | "good" | "moderate" | "rising" | "cold" | "unranked" | undefined;
+        offset?: number | undefined;
+    }, {
+        sort?: "mc_desc" | "mc_asc" | "last_trade_desc" | "liquidity_desc" | "cumulative_volume_desc" | "mc_change_5m_desc" | "mc_change_1h_desc" | "volume_1h_desc" | "trending" | undefined;
+        limit?: number | undefined;
+        min_mc?: number | undefined;
+        max_mc?: number | undefined;
+        min_liq?: number | undefined;
+        active_h?: number | undefined;
+        primary_dex?: "pumpfun" | "pumpswap" | "raydium" | "meteora" | "orca" | "letsbonk" | "other" | undefined;
+        authority_revoked?: boolean | undefined;
+        exclude_token2022?: boolean | undefined;
+        min_lp_burnt_pct?: number | undefined;
+        min_volume_1h_usd?: number | undefined;
+        max_mev_share_pct?: number | undefined;
+        mc_change_1h_min_pct?: number | undefined;
+        mc_change_1h_max_pct?: number | undefined;
+        min_liq_mc_ratio?: number | undefined;
+        max_liq_mc_ratio?: number | undefined;
+        deployer_tier?: "elite" | "good" | "moderate" | "rising" | "cold" | "unranked" | undefined;
+        offset?: number | undefined;
+    }>;
     handler: (agent: unknown, input: {
         min_mc?: number;
         max_mc?: number;
@@ -73,7 +90,7 @@ export declare const tokensListAction: {
         min_liq_mc_ratio?: number;
         max_liq_mc_ratio?: number;
         deployer_tier?: "elite" | "good" | "moderate" | "rising" | "cold" | "unranked";
-        sort?: "mc_desc" | "mc_asc" | "last_trade_desc" | "liquidity_desc" | "cumulative_volume_desc";
+        sort?: "mc_desc" | "mc_asc" | "last_trade_desc" | "liquidity_desc" | "cumulative_volume_desc" | "mc_change_5m_desc" | "mc_change_1h_desc" | "volume_1h_desc" | "trending";
         limit?: number;
         offset?: number;
     }) => Promise<{

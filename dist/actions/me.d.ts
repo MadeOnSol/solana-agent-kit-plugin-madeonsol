@@ -10,7 +10,7 @@ export declare const meAction: {
         };
         explanation: string;
     }[][];
-    schema: z.ZodObject<{}, z.core.$strip>;
+    schema: z.ZodObject<{}, "strip", z.ZodTypeAny, {}, {}>;
     handler: (agent: unknown, _input: Record<string, never>) => Promise<{
         status: string;
         result: any;

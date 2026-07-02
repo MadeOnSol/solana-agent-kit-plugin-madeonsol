@@ -13,8 +13,12 @@ export declare const kolCompareAction: {
         explanation: string;
     }[][];
     schema: z.ZodObject<{
-        wallets: z.ZodArray<z.ZodString>;
-    }, z.core.$strip>;
+        wallets: z.ZodArray<z.ZodString, "many">;
+    }, "strip", z.ZodTypeAny, {
+        wallets: string[];
+    }, {
+        wallets: string[];
+    }>;
     handler: (agent: unknown, input: {
         wallets: string[];
     }) => Promise<{

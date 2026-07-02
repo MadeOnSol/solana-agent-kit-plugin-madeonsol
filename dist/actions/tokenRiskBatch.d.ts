@@ -1,12 +1,11 @@
 import { z } from "zod";
-export declare const kolPnlAction: {
+export declare const tokenRiskBatchAction: {
     name: string;
     similes: string[];
     description: string;
     examples: {
         input: {
-            wallet: string;
-            period: string;
+            mints: string[];
         };
         output: {
             status: string;
@@ -14,18 +13,14 @@ export declare const kolPnlAction: {
         explanation: string;
     }[][];
     schema: z.ZodObject<{
-        wallet: z.ZodString;
-        period: z.ZodDefault<z.ZodEnum<["7d", "30d", "90d", "180d"]>>;
+        mints: z.ZodArray<z.ZodString, "many">;
     }, "strip", z.ZodTypeAny, {
-        period: "7d" | "30d" | "90d" | "180d";
-        wallet: string;
+        mints: string[];
     }, {
-        wallet: string;
-        period?: "7d" | "30d" | "90d" | "180d" | undefined;
+        mints: string[];
     }>;
     handler: (agent: unknown, input: {
-        wallet: string;
-        period?: string;
+        mints: string[];
     }) => Promise<{
         status: string;
         result: any;
