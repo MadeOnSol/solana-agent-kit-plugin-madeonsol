@@ -38,7 +38,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/LamboPoewert/solana-agent-kit-plugin-madeonsol"
+    "url": "https://github.com/madeonsol/solana-agent-kit-plugin-madeonsol"
   },
   "peerDependencies": {
     "solana-agent-kit": ">=2.0.0",
