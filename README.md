@@ -7,10 +7,12 @@
 
 > 📚 **[API docs](https://madeonsol.com/api-docs)** · 💰 **[Free API key](https://madeonsol.com/pricing)** · 🤖 **[Solana Agent Kit](https://github.com/sendaifun/solana-agent-kit)**
 
-[Solana Agent Kit](https://github.com/sendaifun/solana-agent-kit) plugin for [MadeOnSol](https://madeonsol.com) — Solana KOL intelligence, deployer analytics, and wallet tracking.
+[Solana Agent Kit](https://github.com/sendaifun/solana-agent-kit) plugin for [MadeOnSol](https://madeonsol.com) — Solana KOL intelligence, deployer analytics, bundle-cohort held-% signals, and wallet tracking.
 
 > Real-time Solana trading intelligence: track 1,069 KOL wallets with <3s latency, score 23,000+ Pump.fun deployers, surface deshred deploy signals ~500ms before on-chain confirmation, detect multi-KOL coordination, and stream every DEX trade. Free tier: 200 requests/day, every endpoint — no signup payment. Get a key at [madeonsol.com/pricing](https://madeonsol.com/pricing).
 
+> **New in 1.16.0** — **Bundle-cohort holdings.** New tool `tokenBundle()` + action `MADEONSOL_TOKEN_BUNDLE_ACTION` — which same-slot "bundle" wallets (≥3 buying in one slot) bought a token and how much of supply they STILL hold, from confirmed on-chain data. Returns a `bundle` summary (`wallet_count`, `bundle_kind` [`atomic_tx`/`same_slot`/`none`], `held_ratio`, **`held_pct_of_supply`** [the headline rug/insider signal], `fully_exited`, `buy_volume`, `tokens_held`) plus a `wallets[]` list (`rank`, `wallet`, `held_ratio`, `has_sold`, `atomic`, `is_kol`). BASIC/TRADER get the `bundle` block only (`wallets: []`); PRO gets top-10 flags-only; ULTRA adds full holdings + wallet identity (`kol_name`, `win_rate`, `bot_confidence`, `tokens_held`). PRO/ULTRA only.
+>
 > **New in 1.15.0** — **Batch risk scoring + WebSocket session control.** New tool `tokenRiskBatch()` + action `MADEONSOL_TOKEN_RISK_BATCH_ACTION` — bulk 0–100 rug-risk/safety scoring for 1–50 mints in one call (`{ tokens, count }`, same per-mint shape as `tokenRisk()` plus an `as_of` ISO string; untracked mints come back as `{ mint, error: "not_tracked" }` without failing the batch; counts as one request). New tools `streamSessions()` / `streamSessionKill({ id })` + actions `MADEONSOL_STREAM_SESSIONS_ACTION` / `MADEONSOL_STREAM_SESSION_KILL_ACTION` — list your live ws-streaming/dex-stream sessions (`id`, `service`, `tier`, `channels[]`, `connected_at`, `remote_ip`, `messages_sent`) and evict one by id to free a connection slot. PRO/ULTRA only.
 >
 > **New in 1.14.0** — **Almost-bonded discovery + trending sorts.** New tool `almostBonded()` + action `MADEONSOL_ALMOST_BONDED_ACTION` — pre-bond pump.fun tokens near graduation, ranked by velocity (Δprogress/min): "95% and accelerating" beats "92% stalled". Each token carries `progress_pct`, `velocity_pct_per_min`, `eta_minutes`, `stalled`, `real_sol_reserves`, `market_cap_usd`, `liquidity_usd`, `authorities_revoked`, `deployer_tier`, and `age_minutes`. Params: `min_progress`, `max_progress`, `min_velocity_pct_per_min`, `max_age_minutes`, `deployer_tier`, `authority_revoked`, `min_liq`, `sort` (velocity_desc / progress_desc / eta_asc), `limit`. PRO/ULTRA only. Plus `tokensList({ sort })` gains four momentum sorts — `mc_change_5m_desc`, `mc_change_1h_desc`, `volume_1h_desc`, and `trending` (composite recent-volume × positive-momentum rank).
@@ -20,8 +22,6 @@
 > **New in 1.12.0** — **Token OHLCV candles.** New tool `tokenCandles()` + action `MADEONSOL_TOKEN_CANDLES_ACTION` — historical price candles (1m/5m/15m/1h/4h/1d) aggregated from the on-chain trade firehose. Each candle has `t/open/high/low/close/volume_usd/trades/market_cap_usd`. PRO returns OHLCV for the last 30 days; ULTRA adds buy/sell volume + count splits, net flow, MEV volume, open/close liquidity, high/low MC, and full history. PRO/ULTRA only.
 >
 > **New in 1.11.0** — **Token risk score.** New tool `tokenRisk()` + action `MADEONSOL_TOKEN_RISK_ACTION` — a transparent 0–100 rug-risk/safety score (higher = riskier) with a `band` (safe/caution/danger), an explainable `factors[]` array, and the raw `inputs` (mint/freeze authority, liquidity, liq-to-MC ratio, transfer fee, launch cohort, deployer bond rate, KOL signal, blacklist). PRO/ULTRA only.
-
-> **New in 1.10.0** — `tokensList()` gains three new filter params: `min_liq_mc_ratio`, `max_liq_mc_ratio`, and `deployer_tier`. Response items now include `liquidity_to_mc_ratio` and `deployer_tier`. KOL leaderboard entries now include `median_hold_minutes_30d` and `percentile_early_entry_30d`. Token endpoints now return `liquidity_to_mc_ratio`, `launch_cohort_sol`, and `launch_cohort_size`.
 
 > **New in 1.9.3** — Deployer alerts now surface `runner_rate` + `labeled_tokens` (fraction of a deployer's labeled tokens that ran vs dumped, gate on `labeled_tokens` ≥3) and `avg_time_to_bond_minutes`.
 
@@ -139,6 +139,7 @@ await agent.methods.tokenCapTable(agent, { mint: "MINT" });             // PRO=1
 await agent.methods.tokenBuyerQuality(agent, { mint: "MINT" });         // 0–100 buyer-quality score (5-min cached)
 await agent.methods.tokenRisk(agent, { mint: "MINT" });                 // PRO+ 0–100 rug-risk/safety score + band + factors
 await agent.methods.tokenRiskBatch(agent, { mints: ["MINT_A", "MINT_B"] }); // PRO+ bulk rug-risk for 1–50 mints → { tokens, count }; one request
+await agent.methods.tokenBundle(agent, { mint: "MINT" });               // PRO+ bundle-cohort holdings: held_pct_of_supply signal; ULTRA=+wallet identity
 await agent.methods.tokenCandles(agent, { mint: "MINT", tf: "1h" });    // PRO+ OHLCV candles (1m–1d); ULTRA=+net flow, liquidity, full history
 await agent.methods.tokenFlow(agent, { mint: "MINT", window: "24h" });  // PRO+ net buy/sell flow (1h/24h): unique wallets, buy/sell/net SOL, trades-per-wallet
 await agent.methods.almostBonded(agent, { min_progress: 90, sort: "eta_asc" }); // PRO+ pre-bond pump.fun tokens by velocity: progress, ETA, stalled, deployer tier

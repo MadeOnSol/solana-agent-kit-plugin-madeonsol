@@ -1,6 +1,6 @@
 {
   "name": "solana-agent-kit-plugin-madeonsol",
-  "version": "1.15.0",
+  "version": "1.16.0",
   "description": "Solana Agent Kit plugin for MadeOnSol — KOL intelligence and deployer analytics via x402 micropayments",
   "type": "module",
   "main": "dist/index.js",

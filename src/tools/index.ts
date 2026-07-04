@@ -383,6 +383,11 @@ export async function tokenRisk(agent: Agent, params: { mint: string }) {
   return restQuery(agent, "GET", `/tokens/${encodeURIComponent(params.mint)}/risk`);
 }
 
+/** Bundle-cohort holdings: which same-slot "bundle" wallets bought a token and how much of supply they STILL hold (held_pct_of_supply headline rug/insider signal). BASIC/TRADER=bundle block only; PRO=top-10 flags; ULTRA=full + identity. PRO/ULTRA only. */
+export async function tokenBundle(agent: Agent, params: { mint: string }) {
+  return restQuery(agent, "GET", `/tokens/${encodeURIComponent(params.mint)}/bundle`);
+}
+
 /** Historical OHLCV candles (1m/5m/15m/1h/4h/1d) aggregated from the trade firehose. PRO=OHLCV 30d; ULTRA=+net flow, liquidity delta, full history. PRO/ULTRA only. */
 export async function tokenCandles(agent: Agent, params: { mint: string; tf?: string; limit?: number; from?: string; to?: string }) {
   const qs = new URLSearchParams();

@@ -184,6 +184,10 @@ export declare function tokenBuyerQuality(agent: Agent, params: {
 export declare function tokenRisk(agent: Agent, params: {
     mint: string;
 }): Promise<any>;
+/** Bundle-cohort holdings: which same-slot "bundle" wallets bought a token and how much of supply they STILL hold (held_pct_of_supply headline rug/insider signal). BASIC/TRADER=bundle block only; PRO=top-10 flags; ULTRA=full + identity. PRO/ULTRA only. */
+export declare function tokenBundle(agent: Agent, params: {
+    mint: string;
+}): Promise<any>;
 /** Historical OHLCV candles (1m/5m/15m/1h/4h/1d) aggregated from the trade firehose. PRO=OHLCV 30d; ULTRA=+net flow, liquidity delta, full history. PRO/ULTRA only. */
 export declare function tokenCandles(agent: Agent, params: {
     mint: string;
