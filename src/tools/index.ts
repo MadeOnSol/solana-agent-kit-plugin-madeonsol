@@ -49,7 +49,7 @@ export async function initAuth(agent: Agent): Promise<void> {
 
   if (apiKey) {
     _authMode = "madeonsol";
-    _authHeaders = { Authorization: `Bearer ${apiKey}`, "User-Agent": "solana-agent-kit-plugin-madeonsol/1.11.0" };
+    _authHeaders = { Authorization: `Bearer ${apiKey}`, "User-Agent": "solana-agent-kit-plugin-madeonsol/1.16.1" };
     _paidFetch = fetch;
     console.log("[madeonsol] Using MadeOnSol API key (Bearer auth)");
   } else if (privateKey) {
@@ -383,7 +383,7 @@ export async function tokenRisk(agent: Agent, params: { mint: string }) {
   return restQuery(agent, "GET", `/tokens/${encodeURIComponent(params.mint)}/risk`);
 }
 
-/** Bundle-cohort holdings: which same-slot "bundle" wallets bought a token and how much of supply they STILL hold (held_pct_of_supply headline rug/insider signal). BASIC/TRADER=bundle block only; PRO=top-10 flags; ULTRA=full + identity. PRO/ULTRA only. */
+/** Bundle-cohort holdings: which same-slot "bundle" wallets bought a token and how much of supply they STILL hold (held_pct_of_supply headline rug/insider signal). BASIC=bundle block only; PRO=top-10 flags; ULTRA=full + identity. PRO/ULTRA only. */
 export async function tokenBundle(agent: Agent, params: { mint: string }) {
   return restQuery(agent, "GET", `/tokens/${encodeURIComponent(params.mint)}/bundle`);
 }

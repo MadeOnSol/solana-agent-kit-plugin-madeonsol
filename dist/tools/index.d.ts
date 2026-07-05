@@ -184,7 +184,7 @@ export declare function tokenBuyerQuality(agent: Agent, params: {
 export declare function tokenRisk(agent: Agent, params: {
     mint: string;
 }): Promise<any>;
-/** Bundle-cohort holdings: which same-slot "bundle" wallets bought a token and how much of supply they STILL hold (held_pct_of_supply headline rug/insider signal). BASIC/TRADER=bundle block only; PRO=top-10 flags; ULTRA=full + identity. PRO/ULTRA only. */
+/** Bundle-cohort holdings: which same-slot "bundle" wallets bought a token and how much of supply they STILL hold (held_pct_of_supply headline rug/insider signal). BASIC=bundle block only; PRO=top-10 flags; ULTRA=full + identity. PRO/ULTRA only. */
 export declare function tokenBundle(agent: Agent, params: {
     mint: string;
 }): Promise<any>;
