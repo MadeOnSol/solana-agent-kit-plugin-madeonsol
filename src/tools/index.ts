@@ -7,6 +7,8 @@
  * Get a free `msk_` key at https://madeonsol.com/pricing.
  */
 
+import { VERSION } from "../version.js";
+
 const BASE_URL = "https://madeonsol.com";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -49,7 +51,7 @@ export async function initAuth(agent: Agent): Promise<void> {
 
   if (apiKey) {
     _authMode = "madeonsol";
-    _authHeaders = { Authorization: `Bearer ${apiKey}`, "User-Agent": "solana-agent-kit-plugin-madeonsol/1.16.1" };
+    _authHeaders = { Authorization: `Bearer ${apiKey}`, "User-Agent": `solana-agent-kit-plugin-madeonsol/${VERSION}` };
     _paidFetch = fetch;
     console.log("[madeonsol] Using MadeOnSol API key (Bearer auth)");
   } else if (privateKey) {
@@ -210,6 +212,17 @@ export async function kolTiming(agent: Agent, params: { wallet: string; period?:
 
 export async function deployerTrajectory(agent: Agent, params: { wallet: string }) {
   return restQuery(agent, "GET", `/deployer-hunter/${params.wallet}/trajectory`);
+}
+
+/**
+ * A deployer's daily reputation time-series — backtest "was this deployer elite when it launched token X?"
+ * without look-ahead bias. Returns `{ is_deployer, wallet, snapshots[] }` where each snapshot has
+ * `date`, `tier`, `is_tracked`, `total_deployed`, `total_bonded`, `bonding_rate`, `recent_bond_rate`,
+ * `avg_peak_mc`, `best_token_peak_mc`. `limit` is days of history (1..365, default 90). PRO/ULTRA only.
+ */
+export async function deployerHistory(agent: Agent, params: { wallet: string; limit?: number }) {
+  const qs = params.limit !== undefined ? `?limit=${params.limit}` : "";
+  return restQuery(agent, "GET", `/deployer-hunter/${encodeURIComponent(params.wallet)}/history${qs}`);
 }
 
 // ── REST helper (webhooks, streaming, alpha, copy-trade, wallet-tracker) ──
@@ -386,6 +399,11 @@ export async function tokenRisk(agent: Agent, params: { mint: string }) {
 /** Bundle-cohort holdings: which same-slot "bundle" wallets bought a token and how much of supply they STILL hold (held_pct_of_supply headline rug/insider signal). BASIC=bundle block only; PRO=top-10 flags; ULTRA=full + identity. PRO/ULTRA only. */
 export async function tokenBundle(agent: Agent, params: { mint: string }) {
   return restQuery(agent, "GET", `/tokens/${encodeURIComponent(params.mint)}/bundle`);
+}
+
+/** Per-venue liquidity map: every DEX pool a token trades in (live vs parked), plus fragmentation + top-pool share. Returns `pools[]` ({ pool_address, dex, quote_mint, liquidity_usd, last_price_sol, last_swap_at, amm_id, is_active }) and a `summary` ({ pool_count, active_pool_count, dex_count, dexes, total_liquidity_usd, primary_pool, primary_dex, top_pool_share_pct }). PRO/ULTRA only. */
+export async function tokenPools(agent: Agent, params: { mint: string }) {
+  return restQuery(agent, "GET", `/tokens/${encodeURIComponent(params.mint)}/pools`);
 }
 
 /** Historical OHLCV candles (1m/5m/15m/1h/4h/1d) aggregated from the trade firehose. PRO=OHLCV 30d; ULTRA=+net flow, liquidity delta, full history. PRO/ULTRA only. */

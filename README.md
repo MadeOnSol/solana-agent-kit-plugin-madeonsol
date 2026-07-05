@@ -11,6 +11,8 @@
 
 > Real-time Solana trading intelligence: track 1,069 KOL wallets with <3s latency, score 23,000+ Pump.fun deployers, surface deshred deploy signals ~500ms before on-chain confirmation, detect multi-KOL coordination, and stream every DEX trade. Free tier: 200 requests/day, every endpoint — no signup payment. Get a key at [madeonsol.com/pricing](https://madeonsol.com/pricing).
 
+> **New in 1.16.2** — **Per-venue liquidity map + deployer reputation history.** New tool `tokenPools()` + action `MADEONSOL_TOKEN_POOLS_ACTION` — every DEX pool a token trades in (live vs parked), with fragmentation and top-pool share. Returns a `pools[]` list (`pool_address`, `dex`, `quote_mint`, `liquidity_usd`, `last_price_sol`, `last_swap_at`, `amm_id`, `is_active`) and a `summary` (`pool_count`, `active_pool_count`, `dex_count`, `dexes`, `total_liquidity_usd`, `primary_pool`, `primary_dex`, `top_pool_share_pct`). New tool `deployerHistory()` + action `MADEONSOL_DEPLOYER_HISTORY_ACTION` — a deployer's daily reputation time-series to backtest "was this deployer elite when it launched token X?" without look-ahead bias. Returns `{ is_deployer, wallet, snapshots[] }` where each snapshot has `date`, `tier`, `is_tracked`, `total_deployed`, `total_bonded`, `bonding_rate`, `recent_bond_rate`, `avg_peak_mc`, `best_token_peak_mc` (`limit` = 1–365 days, default 90). Both PRO/ULTRA only.
+>
 > **New in 1.16.0** — **Bundle-cohort holdings.** New tool `tokenBundle()` + action `MADEONSOL_TOKEN_BUNDLE_ACTION` — which same-slot "bundle" wallets (≥3 buying in one slot) bought a token and how much of supply they STILL hold, from confirmed on-chain data. Returns a `bundle` summary (`wallet_count`, `bundle_kind` [`atomic_tx`/`same_slot`/`none`], `held_ratio`, **`held_pct_of_supply`** [the headline rug/insider signal], `fully_exited`, `buy_volume`, `tokens_held`) plus a `wallets[]` list (`rank`, `wallet`, `held_ratio`, `has_sold`, `atomic`, `is_kol`). BASIC get the `bundle` block only (`wallets: []`); PRO gets top-10 flags-only; ULTRA adds full holdings + wallet identity (`kol_name`, `win_rate`, `bot_confidence`, `tokens_held`). PRO/ULTRA only.
 >
 > **New in 1.15.0** — **Batch risk scoring + WebSocket session control.** New tool `tokenRiskBatch()` + action `MADEONSOL_TOKEN_RISK_BATCH_ACTION` — bulk 0–100 rug-risk/safety scoring for 1–50 mints in one call (`{ tokens, count }`, same per-mint shape as `tokenRisk()` plus an `as_of` ISO string; untracked mints come back as `{ mint, error: "not_tracked" }` without failing the batch; counts as one request). New tools `streamSessions()` / `streamSessionKill({ id })` + actions `MADEONSOL_STREAM_SESSIONS_ACTION` / `MADEONSOL_STREAM_SESSION_KILL_ACTION` — list your live ws-streaming/dex-stream sessions (`id`, `service`, `tier`, `channels[]`, `connected_at`, `remote_ip`, `messages_sent`) and evict one by id to free a connection slot. PRO/ULTRA only.
@@ -117,6 +119,8 @@ const events = await agent.methods.walletTrackerTrades(agent, { limit: 50 });
 | `MADEONSOL_TOKEN_RISK_BATCH_ACTION` | **New 1.15** · "batch token risk", "bulk rug risk", "score many tokens" — rug-risk scoring for 1–50 mints in one call; untracked mints don't fail the batch (PRO+) |
 | `MADEONSOL_STREAM_SESSIONS_ACTION` | **New 1.15** · "list stream sessions", "live websocket sessions", "active ws sessions" — your live ws-streaming/dex-stream sessions (PRO+) |
 | `MADEONSOL_STREAM_SESSION_KILL_ACTION` | **New 1.15** · "kill stream session", "evict session", "free a connection slot" — evict a live streaming session by id (PRO+) |
+| `MADEONSOL_TOKEN_POOLS_ACTION` | **New 1.16.2** · "token pools", "liquidity map", "which dex pools", "pool fragmentation" — per-venue liquidity map (live vs parked pools) + top-pool share (PRO+) |
+| `MADEONSOL_DEPLOYER_HISTORY_ACTION` | **New 1.16.2** · "deployer history", "deployer reputation over time", "was this deployer elite" — a deployer's daily reputation time-series, backtest without look-ahead bias (PRO+) |
 
 ## Additional methods (v1.0+)
 
@@ -140,9 +144,11 @@ await agent.methods.tokenBuyerQuality(agent, { mint: "MINT" });         // 0–1
 await agent.methods.tokenRisk(agent, { mint: "MINT" });                 // PRO+ 0–100 rug-risk/safety score + band + factors
 await agent.methods.tokenRiskBatch(agent, { mints: ["MINT_A", "MINT_B"] }); // PRO+ bulk rug-risk for 1–50 mints → { tokens, count }; one request
 await agent.methods.tokenBundle(agent, { mint: "MINT" });               // PRO+ bundle-cohort holdings: held_pct_of_supply signal; ULTRA=+wallet identity
+await agent.methods.tokenPools(agent, { mint: "MINT" });                // PRO+ per-venue liquidity map: live vs parked pools, fragmentation, top-pool share
 await agent.methods.tokenCandles(agent, { mint: "MINT", tf: "1h" });    // PRO+ OHLCV candles (1m–1d); ULTRA=+net flow, liquidity, full history
 await agent.methods.tokenFlow(agent, { mint: "MINT", window: "24h" });  // PRO+ net buy/sell flow (1h/24h): unique wallets, buy/sell/net SOL, trades-per-wallet
 await agent.methods.almostBonded(agent, { min_progress: 90, sort: "eta_asc" }); // PRO+ pre-bond pump.fun tokens by velocity: progress, ETA, stalled, deployer tier
+await agent.methods.deployerHistory(agent, { wallet: "WALLET", limit: 90 }); // PRO+ deployer daily reputation time-series (1–365d): tier, bonding_rate, peak MC — no look-ahead
 ```
 
 > Deployer alerts (`MADEONSOL_DEPLOYER_ALERTS_ACTION` / `agent.methods.deployerAlerts()`) now include `deployer_sol_balance` — the deployer wallet's SOL balance at alert time (`null` for historical rows).

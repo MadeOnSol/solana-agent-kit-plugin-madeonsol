@@ -100,6 +100,16 @@ export declare function kolTiming(agent: Agent, params: {
 export declare function deployerTrajectory(agent: Agent, params: {
     wallet: string;
 }): Promise<any>;
+/**
+ * A deployer's daily reputation time-series — backtest "was this deployer elite when it launched token X?"
+ * without look-ahead bias. Returns `{ is_deployer, wallet, snapshots[] }` where each snapshot has
+ * `date`, `tier`, `is_tracked`, `total_deployed`, `total_bonded`, `bonding_rate`, `recent_bond_rate`,
+ * `avg_peak_mc`, `best_token_peak_mc`. `limit` is days of history (1..365, default 90). PRO/ULTRA only.
+ */
+export declare function deployerHistory(agent: Agent, params: {
+    wallet: string;
+    limit?: number;
+}): Promise<any>;
 export declare function createWebhook(agent: Agent, params: {
     url: string;
     events: string[];
@@ -186,6 +196,10 @@ export declare function tokenRisk(agent: Agent, params: {
 }): Promise<any>;
 /** Bundle-cohort holdings: which same-slot "bundle" wallets bought a token and how much of supply they STILL hold (held_pct_of_supply headline rug/insider signal). BASIC=bundle block only; PRO=top-10 flags; ULTRA=full + identity. PRO/ULTRA only. */
 export declare function tokenBundle(agent: Agent, params: {
+    mint: string;
+}): Promise<any>;
+/** Per-venue liquidity map: every DEX pool a token trades in (live vs parked), plus fragmentation + top-pool share. Returns `pools[]` ({ pool_address, dex, quote_mint, liquidity_usd, last_price_sol, last_swap_at, amm_id, is_active }) and a `summary` ({ pool_count, active_pool_count, dex_count, dexes, total_liquidity_usd, primary_pool, primary_dex, top_pool_share_pct }). PRO/ULTRA only. */
+export declare function tokenPools(agent: Agent, params: {
     mint: string;
 }): Promise<any>;
 /** Historical OHLCV candles (1m/5m/15m/1h/4h/1d) aggregated from the trade firehose. PRO=OHLCV 30d; ULTRA=+net flow, liquidity delta, full history. PRO/ULTRA only. */
