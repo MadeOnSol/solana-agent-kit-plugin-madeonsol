@@ -164,6 +164,19 @@ export declare function walletPnl(agent: Agent, params: {
 export declare function walletPositions(agent: Agent, params: {
     address: string;
 }): Promise<any>;
+/**
+ * Verified CURRENT on-chain holdings for any wallet — the wallet's actual SPL + Token-2022 token
+ * accounts and SOL balance read straight from chain, enriched with price/MC/name/symbol, plus
+ * `transfer_delta` (on-chain amount − trade-derived net position, exposing non-swap flows like
+ * airdrops, insider funding, wallet-hopping). Distinct from `walletPositions` (trade-derived FIFO):
+ * holdings = what the wallet actually holds right now. `limit` 1–500 (default 200); `min_value_usd`
+ * ≥0 (default 0). ULTRA only.
+ */
+export declare function walletHoldings(agent: Agent, params: {
+    address: string;
+    limit?: number;
+    min_value_usd?: number;
+}): Promise<any>;
 export declare function walletTrades(agent: Agent, params: {
     address: string;
     limit?: number;

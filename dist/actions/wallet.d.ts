@@ -95,6 +95,48 @@ export declare const walletPositionsAction: {
         result?: undefined;
     }>;
 };
+export declare const walletHoldingsAction: {
+    name: string;
+    similes: string[];
+    description: string;
+    examples: {
+        input: {
+            address: string;
+            limit: number;
+            min_value_usd: number;
+        };
+        output: {
+            status: string;
+        };
+        explanation: string;
+    }[][];
+    schema: z.ZodObject<{
+        address: z.ZodString;
+        limit: z.ZodOptional<z.ZodNumber>;
+        min_value_usd: z.ZodOptional<z.ZodNumber>;
+    }, "strip", z.ZodTypeAny, {
+        address: string;
+        limit?: number | undefined;
+        min_value_usd?: number | undefined;
+    }, {
+        address: string;
+        limit?: number | undefined;
+        min_value_usd?: number | undefined;
+    }>;
+    handler: (agent: unknown, input: {
+        address: string;
+        limit?: number;
+        min_value_usd?: number;
+    }) => Promise<{
+        status: string;
+        result: any;
+        message?: undefined;
+    } | {
+        status: string;
+        message: string;
+        result?: undefined;
+    }>;
+};
 export declare const walletTradesAction: {
     name: string;
     similes: string[];

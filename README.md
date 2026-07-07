@@ -9,8 +9,10 @@
 
 [Solana Agent Kit](https://github.com/sendaifun/solana-agent-kit) plugin for [MadeOnSol](https://madeonsol.com) — Solana KOL intelligence, deployer analytics, bundle-cohort held-% signals, and wallet tracking.
 
-> Real-time Solana trading intelligence: track 1,069 KOL wallets with <3s latency, score 23,000+ Pump.fun deployers, surface deshred deploy signals ~500ms before on-chain confirmation, detect multi-KOL coordination, and stream every DEX trade. Free tier: 200 requests/day, every endpoint — no signup payment. Get a key at [madeonsol.com/pricing](https://madeonsol.com/pricing).
+> Real-time Solana trading intelligence: track 1,069 KOL wallets with <3s latency, score 23,000+ Pump.fun deployers, verify any wallet's CURRENT on-chain holdings straight from its token accounts, surface deshred deploy signals ~500ms before on-chain confirmation, detect multi-KOL coordination, and stream every DEX trade. Free tier: 200 requests/day, every endpoint — no signup payment. Get a key at [madeonsol.com/pricing](https://madeonsol.com/pricing).
 
+> **New in 1.17.0** — **Verified on-chain wallet holdings.** New tool `walletHoldings()` + action `MADEONSOL_WALLET_HOLDINGS_ACTION` — the wallet's CURRENT holdings read straight from chain: its actual SPL + Token-2022 token accounts and SOL balance, each enriched with `price_usd` / `value_usd` / `market_cap_usd` / `name` / `symbol` / `is_bonded`, plus `transfer_delta` (on-chain amount − trade-derived net position — exposes non-swap flows like airdrops, insider funding, wallet-hopping). Distinct from `walletPositions()` (trade-derived FIFO): this is what the wallet *actually* holds right now. Params: `limit` (1–500, default 200), `min_value_usd` (default 0). Returns `{ address, sol_balance, holdings[], summary, verified_at, trade_window_days, cache_hit, ttl_seconds }`. ULTRA only.
+>
 > **New in 1.16.2** — **Per-venue liquidity map + deployer reputation history.** New tool `tokenPools()` + action `MADEONSOL_TOKEN_POOLS_ACTION` — every DEX pool a token trades in (live vs parked), with fragmentation and top-pool share. Returns a `pools[]` list (`pool_address`, `dex`, `quote_mint`, `liquidity_usd`, `last_price_sol`, `last_swap_at`, `amm_id`, `is_active`) and a `summary` (`pool_count`, `active_pool_count`, `dex_count`, `dexes`, `total_liquidity_usd`, `primary_pool`, `primary_dex`, `top_pool_share_pct`). New tool `deployerHistory()` + action `MADEONSOL_DEPLOYER_HISTORY_ACTION` — a deployer's daily reputation time-series to backtest "was this deployer elite when it launched token X?" without look-ahead bias. Returns `{ is_deployer, wallet, snapshots[] }` where each snapshot has `date`, `tier`, `is_tracked`, `total_deployed`, `total_bonded`, `bonding_rate`, `recent_bond_rate`, `avg_peak_mc`, `best_token_peak_mc` (`limit` = 1–365 days, default 90). Both PRO/ULTRA only.
 >
 > **New in 1.16.0** — **Bundle-cohort holdings.** New tool `tokenBundle()` + action `MADEONSOL_TOKEN_BUNDLE_ACTION` — which same-slot "bundle" wallets (≥3 buying in one slot) bought a token and how much of supply they STILL hold, from confirmed on-chain data. Returns a `bundle` summary (`wallet_count`, `bundle_kind` [`atomic_tx`/`same_slot`/`none`], `held_ratio`, **`held_pct_of_supply`** [the headline rug/insider signal], `fully_exited`, `buy_volume`, `tokens_held`) plus a `wallets[]` list (`rank`, `wallet`, `held_ratio`, `has_sold`, `atomic`, `is_kol`). BASIC get the `bundle` block only (`wallets: []`); PRO gets top-10 flags-only; ULTRA adds full holdings + wallet identity (`kol_name`, `win_rate`, `bot_confidence`, `tokens_held`). PRO/ULTRA only.
@@ -114,6 +116,7 @@ const events = await agent.methods.walletTrackerTrades(agent, { limit: 50 });
 | `MADEONSOL_WALLET_STATS_ACTION` | **New 1.8** · "wallet stats", "wallet info", "check wallet" — aggregate 90d stats + cross-product flags (KOL/alpha/deployer) for any Solana wallet (PRO+) |
 | `MADEONSOL_WALLET_PNL_ACTION` | **New 1.8** · "wallet pnl", "wallet profit", "wallet performance" — FIFO cost-basis PnL with profit factor, drawdown, daily curve, closed + open positions (PRO+) |
 | `MADEONSOL_WALLET_POSITIONS_ACTION` | **New 1.8** · "wallet positions", "wallet bags", "open positions" — open lots with live unrealized SOL (PRO+) |
+| `MADEONSOL_WALLET_HOLDINGS_ACTION` | **New 1.17** · "wallet holdings", "current holdings", "what does wallet actually hold" — verified CURRENT on-chain holdings (real SPL + Token-2022 accounts + SOL) enriched with price/MC/name, plus `transfer_delta` vs trade-derived position (ULTRA only) |
 | `MADEONSOL_WALLET_TRADES_ACTION` | **New 1.8** · "wallet trades", "wallet history" — cursor-paginated raw trades with filters (PRO+) |
 | `MADEONSOL_TOKEN_FLOW_ACTION` | **New 1.13** · "token flow", "net flow", "buy/sell pressure" — net buy/sell flow over a 1h/24h window (PRO+) |
 | `MADEONSOL_TOKEN_RISK_BATCH_ACTION` | **New 1.15** · "batch token risk", "bulk rug risk", "score many tokens" — rug-risk scoring for 1–50 mints in one call; untracked mints don't fail the batch (PRO+) |
@@ -309,6 +312,8 @@ console.log(lastRateLimit); // { limit: "10000", remaining: "9999", reset: "..."
 | ULTRA | €131/mo (€1310/yr) ≈ $149 | 100 + WS events | 100,000 |
 
 Free tier returns the full REST response shape on every endpoint — real wallets, TX signatures, full precision. Paid tiers unlock webhooks, WebSockets, rule engines, and ULTRA-only data depth. Get a key at [madeonsol.com/pricing](https://madeonsol.com/pricing).
+
+New customers get a 5-day free trial of Pro or Ultra when you pay by card — full access, nothing charged during the trial, cancel anytime. Start at https://madeonsol.com/pricing
 
 ## Also Available
 

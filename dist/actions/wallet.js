@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { walletStats, walletPnl, walletPositions, walletTrades } from "../tools/index.js";
+import { walletStats, walletPnl, walletPositions, walletHoldings, walletTrades } from "../tools/index.js";
 export const walletStatsAction = {
     name: "MADEONSOL_WALLET_STATS_ACTION",
     similes: [
@@ -93,6 +93,41 @@ export const walletPositionsAction = {
     handler: async (agent, input) => {
         try {
             const data = await walletPositions(agent, input);
+            return { status: "success", result: data };
+        }
+        catch (err) {
+            return { status: "error", message: err.message };
+        }
+    },
+};
+export const walletHoldingsAction = {
+    name: "MADEONSOL_WALLET_HOLDINGS_ACTION",
+    similes: [
+        "wallet holdings",
+        "current holdings",
+        "on-chain holdings",
+        "what does wallet actually hold",
+        "verified holdings",
+        "wallet token balances",
+    ],
+    description: "Verified CURRENT on-chain holdings for any Solana wallet — the wallet's actual SPL + Token-2022 token accounts and SOL balance read straight from chain, enriched with price_usd, value_usd, market_cap_usd, name, symbol, is_bonded, plus transfer_delta (on-chain amount − trade-derived net position, which exposes non-swap flows: airdrops, insider funding, wallet-hopping). Distinct from MADEONSOL_WALLET_POSITIONS_ACTION (trade-derived FIFO) — this is what the wallet actually holds right now. Returns { address, sol_balance, holdings[], summary, verified_at, trade_window_days, cache_hit, ttl_seconds }. ULTRA only.",
+    examples: [
+        [
+            {
+                input: { address: "ASVzakePP6GNg9r95d4LPZHJDMXun6L6E4um4pu5ybJk", limit: 50, min_value_usd: 10 },
+                output: { status: "success" },
+                explanation: "List the wallet's verified on-chain holdings worth at least $10",
+            },
+        ],
+    ],
+    schema: z.object({
+        address: z.string().describe("Solana wallet address"),
+        limit: z.number().min(1).max(500).optional().describe("Max holdings to return (1-500, default 200)"),
+        min_value_usd: z.number().min(0).optional().describe("Only return holdings worth at least this many USD (default 0)"),
+    }),
+    handler: async (agent, input) => {
+        try {
+            const data = await walletHoldings(agent, input);
             return { status: "success", result: data };
         }
         catch (err) {

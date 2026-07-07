@@ -32,10 +32,10 @@ import {
   kolFirstTouches, firstTouchSubscriptionsList, firstTouchSubscriptionsCreate, firstTouchSubscriptionsGet, firstTouchSubscriptionsUpdate, firstTouchSubscriptionsDelete,
   priceAlertsList, priceAlertsCreate, priceAlertsGet, priceAlertsUpdate, priceAlertsDelete, priceAlertsEvents,
   scoutLeaderboard, coordinationHistory, kolConsensus, peakHistory,
-  walletStats, walletPnl, walletPositions, walletTrades,
+  walletStats, walletPnl, walletPositions, walletHoldings, walletTrades,
   me, tokensList, almostBonded,
 } from "./tools/index.js";
-import { walletStatsAction, walletPnlAction, walletPositionsAction, walletTradesAction } from "./actions/wallet.js";
+import { walletStatsAction, walletPnlAction, walletPositionsAction, walletHoldingsAction, walletTradesAction } from "./actions/wallet.js";
 
 const MadeOnSolPlugin = {
   name: "madeonsol",
@@ -106,6 +106,7 @@ const MadeOnSolPlugin = {
     walletStats,
     walletPnl,
     walletPositions,
+    walletHoldings,
     walletTrades,
   },
   actions: [
@@ -139,6 +140,7 @@ const MadeOnSolPlugin = {
     walletStatsAction,
     walletPnlAction,
     walletPositionsAction,
+    walletHoldingsAction,
     walletTradesAction,
   ],
   initialize(_agent: unknown) {
@@ -159,10 +161,10 @@ export {
   kolFirstTouches, firstTouchSubscriptionsList, firstTouchSubscriptionsCreate, firstTouchSubscriptionsGet, firstTouchSubscriptionsUpdate, firstTouchSubscriptionsDelete,
   priceAlertsList, priceAlertsCreate, priceAlertsGet, priceAlertsUpdate, priceAlertsDelete, priceAlertsEvents,
   scoutLeaderboard, coordinationHistory, kolConsensus, peakHistory,
-  walletStats, walletPnl, walletPositions, walletTrades,
+  walletStats, walletPnl, walletPositions, walletHoldings, walletTrades,
   me, tokensList, almostBonded,
 };
 export { kolFeedAction, kolCoordinationAction, kolLeaderboardAction, deployerAlertsAction, kolPnlAction, kolTrendingTokensAction, kolTokenEntryOrderAction, kolCompareAction, kolAlertsRecentAction, kolFirstTouchesAction };
 export { walletTrackerWatchlistAction, walletTrackerAddAction, walletTrackerRemoveAction, walletTrackerTradesAction, walletTrackerSummaryAction };
-export { walletStatsAction, walletPnlAction, walletPositionsAction, walletTradesAction };
+export { walletStatsAction, walletPnlAction, walletPositionsAction, walletHoldingsAction, walletTradesAction };
 export { meAction, tokensListAction, almostBondedAction, tokenRiskAction, tokenRiskBatchAction, tokenBundleAction, tokenPoolsAction, deployerHistoryAction, tokenCandlesAction, tokenFlowAction, streamSessionsAction, streamSessionKillAction };

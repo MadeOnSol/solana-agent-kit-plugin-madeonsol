@@ -246,6 +246,23 @@ export async function walletPnl(agent, params) {
 export async function walletPositions(agent, params) {
     return restQuery(agent, "GET", `/wallet/${encodeURIComponent(params.address)}/positions`);
 }
+/**
+ * Verified CURRENT on-chain holdings for any wallet — the wallet's actual SPL + Token-2022 token
+ * accounts and SOL balance read straight from chain, enriched with price/MC/name/symbol, plus
+ * `transfer_delta` (on-chain amount − trade-derived net position, exposing non-swap flows like
+ * airdrops, insider funding, wallet-hopping). Distinct from `walletPositions` (trade-derived FIFO):
+ * holdings = what the wallet actually holds right now. `limit` 1–500 (default 200); `min_value_usd`
+ * ≥0 (default 0). ULTRA only.
+ */
+export async function walletHoldings(agent, params) {
+    const qs = new URLSearchParams();
+    if (params.limit !== undefined)
+        qs.set("limit", String(params.limit));
+    if (params.min_value_usd !== undefined)
+        qs.set("min_value_usd", String(params.min_value_usd));
+    const query = qs.toString() ? `?${qs.toString()}` : "";
+    return restQuery(agent, "GET", `/wallet/${encodeURIComponent(params.address)}/holdings${query}`);
+}
 export async function walletTrades(agent, params) {
     const qs = new URLSearchParams();
     if (params.limit !== undefined)
