@@ -375,6 +375,18 @@ export async function walletTrades(
   return restQuery(agent, "GET", `/wallet/${encodeURIComponent(params.address)}/trades${query}`);
 }
 
+/**
+ * Bulk wallet reputation flags for 1–100 addresses in one request (POST /wallet/batch/classify).
+ * Each entry matches the `flags` block of walletStats(): `is_sniper`, `is_bundler` (lifetime flag),
+ * `is_dumper` (rolling 42-day window), `is_kol` + `kol_name`, `bot_confidence` (STRING enum
+ * "none"/"low"/"medium"/"high" | null — never a number), and `dump_cluster` cohort stats
+ * ({ dump_cohorts, runner_cohorts, total_cohorts, as_of } | null). Flags are pump.fun-pipeline
+ * scoped — `false` means "not observed", NOT verified clean. PRO/ULTRA only.
+ */
+export async function walletClassify(agent: Agent, params: { wallets: string[] }) {
+  return restQuery(agent, "POST", "/wallet/batch/classify", { wallets: params.wallets });
+}
+
 // ── Alpha Wallet Intelligence ──
 
 export async function alphaLeaderboard(
@@ -440,6 +452,37 @@ export async function tokenCandles(agent: Agent, params: { mint: string; tf?: st
 export async function tokenFlow(agent: Agent, params: { mint: string; window?: "1h" | "24h" }) {
   const qs = params.window !== undefined ? `?window=${params.window}` : "";
   return restQuery(agent, "GET", `/tokens/${encodeURIComponent(params.mint)}/flow${qs}`);
+}
+
+/**
+ * Mint-scoped trade tape — every captured trade for a token, cursor-paginated newest first
+ * (GET /tokens/{mint}/trades). Each trade: tx_signature, wallet_address, action, sol_amount,
+ * token_amount, price_sol/price_usd, early_buyer_rank, slot, block_time, traded_at. Filter by
+ * `action`, `wallet`, `since`/`until` (unix sec); unlike walletTrades (90d default) the default
+ * window is the FULL history. Coverage honesty: the tape starts 2026-04-12 and is
+ * pump.fun-pipeline scoped — see the response `coverage` block (history_start, scope). PRO/ULTRA only.
+ */
+export async function tokenTrades(
+  agent: Agent,
+  params: {
+    mint: string;
+    limit?: number;
+    cursor?: string;
+    action?: "buy" | "sell";
+    wallet?: string;
+    since?: number;
+    until?: number;
+  },
+) {
+  const qs = new URLSearchParams();
+  if (params.limit !== undefined) qs.set("limit", String(params.limit));
+  if (params.cursor) qs.set("cursor", params.cursor);
+  if (params.action) qs.set("action", params.action);
+  if (params.wallet) qs.set("wallet", params.wallet);
+  if (params.since !== undefined) qs.set("since", String(params.since));
+  if (params.until !== undefined) qs.set("until", String(params.until));
+  const query = qs.toString() ? `?${qs.toString()}` : "";
+  return restQuery(agent, "GET", `/tokens/${encodeURIComponent(params.mint)}/trades${query}`);
 }
 
 /** Bulk buyer-quality scoring for up to 50 mints. Shares the 5-min LRU cache with the single-mint endpoint. */

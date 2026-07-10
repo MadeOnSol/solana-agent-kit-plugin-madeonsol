@@ -186,6 +186,17 @@ export declare function walletTrades(agent: Agent, params: {
     since?: number;
     until?: number;
 }): Promise<any>;
+/**
+ * Bulk wallet reputation flags for 1–100 addresses in one request (POST /wallet/batch/classify).
+ * Each entry matches the `flags` block of walletStats(): `is_sniper`, `is_bundler` (lifetime flag),
+ * `is_dumper` (rolling 42-day window), `is_kol` + `kol_name`, `bot_confidence` (STRING enum
+ * "none"/"low"/"medium"/"high" | null — never a number), and `dump_cluster` cohort stats
+ * ({ dump_cohorts, runner_cohorts, total_cohorts, as_of } | null). Flags are pump.fun-pipeline
+ * scoped — `false` means "not observed", NOT verified clean. PRO/ULTRA only.
+ */
+export declare function walletClassify(agent: Agent, params: {
+    wallets: string[];
+}): Promise<any>;
 export declare function alphaLeaderboard(agent: Agent, params?: {
     limit?: number;
     min_tokens?: number;
@@ -230,6 +241,23 @@ export declare function tokenCandles(agent: Agent, params: {
 export declare function tokenFlow(agent: Agent, params: {
     mint: string;
     window?: "1h" | "24h";
+}): Promise<any>;
+/**
+ * Mint-scoped trade tape — every captured trade for a token, cursor-paginated newest first
+ * (GET /tokens/{mint}/trades). Each trade: tx_signature, wallet_address, action, sol_amount,
+ * token_amount, price_sol/price_usd, early_buyer_rank, slot, block_time, traded_at. Filter by
+ * `action`, `wallet`, `since`/`until` (unix sec); unlike walletTrades (90d default) the default
+ * window is the FULL history. Coverage honesty: the tape starts 2026-04-12 and is
+ * pump.fun-pipeline scoped — see the response `coverage` block (history_start, scope). PRO/ULTRA only.
+ */
+export declare function tokenTrades(agent: Agent, params: {
+    mint: string;
+    limit?: number;
+    cursor?: string;
+    action?: "buy" | "sell";
+    wallet?: string;
+    since?: number;
+    until?: number;
 }): Promise<any>;
 /** Bulk buyer-quality scoring for up to 50 mints. Shares the 5-min LRU cache with the single-mint endpoint. */
 export declare function tokenBuyerQualityBatch(agent: Agent, params: {
