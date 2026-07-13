@@ -419,7 +419,16 @@ export async function tokenBuyerQuality(agent: Agent, params: { mint: string }) 
   return restQuery(agent, "GET", `/tokens/${encodeURIComponent(params.mint)}/buyer-quality`);
 }
 
-/** Transparent 0–100 rug-risk/safety score (higher = riskier) with band, explainable factors, and raw inputs. PRO/ULTRA only. */
+/**
+ * Transparent 0–100 rug-risk/safety score (higher = riskier) with band, explainable factors, and
+ * raw inputs. Also returns a top-level `dev` block (deployer self-activity; null when the mint has
+ * no deployer-pipeline row): create-tx self-buy snapshot (buy_sol/buy_tokens/buy_supply_pct),
+ * post-create rollup (bought_tokens_after — catches the same-second-separate-tx dev buy —
+ * sold_tokens, sold_sol, first_sell_at/last_sell_at), LIVE on-chain holdings (holdings_tokens,
+ * holdings_supply_pct — pump.fun 1B denominator, null elsewhere — wallet_empty: is the dev wallet
+ * empty NOW), and transferred_out (tokens left without a sell; null = unknown, never a guess),
+ * plus as_of. PRO/ULTRA only.
+ */
 export async function tokenRisk(agent: Agent, params: { mint: string }) {
   return restQuery(agent, "GET", `/tokens/${encodeURIComponent(params.mint)}/risk`);
 }
@@ -432,6 +441,25 @@ export async function tokenBundle(agent: Agent, params: { mint: string }) {
 /** Per-venue liquidity map: every DEX pool a token trades in (live vs parked), plus fragmentation + top-pool share. Returns `pools[]` ({ pool_address, dex, quote_mint, liquidity_usd, last_price_sol, last_swap_at, amm_id, is_active }) and a `summary` ({ pool_count, active_pool_count, dex_count, dexes, total_liquidity_usd, primary_pool, primary_dex, top_pool_share_pct }). PRO/ULTRA only. */
 export async function tokenPools(agent: Agent, params: { mint: string }) {
   return restQuery(agent, "GET", `/tokens/${encodeURIComponent(params.mint)}/pools`);
+}
+
+/**
+ * Per-pool price-impact / slippage for a token (GET /tokens/{mint}/depth) — "how much SOL moves
+ * this token's price N%" and the impact of each buy size, per pool (NOT router-optimal). Each
+ * computable pool carries spot_price_sol, fee_pct, a quotes[] entry per requested SOL size
+ * (size_sol, tokens_out, avg_price_sol, price_impact_pct), and to_move_price (SOL to move price
+ * 1%/5%/10%). Constant-product pools are served from stream reserves (source="stream", with
+ * reserves_age_ms); pump.fun/bonk curves from a LIVE read of the curve's virtual reserves
+ * (source="live_rpc"). Pools we can't price honestly (CLMM/Orca/DLMM, Meteora-DBC, unclassified)
+ * land in unsupported_pools[] with a `reason` instead of a wrong number; found=false means no
+ * pools tracked. `sizes` — up to 8 SOL buy sizes (each >0 and ≤10000; default [0.5, 1, 5, 10]),
+ * sent as a CSV query param. PRO/ULTRA only.
+ */
+export async function tokenDepth(agent: Agent, params: { mint: string; sizes?: number[] }) {
+  const qs = new URLSearchParams();
+  if (params.sizes && params.sizes.length > 0) qs.set("sizes", params.sizes.join(","));
+  const query = qs.toString() ? `?${qs.toString()}` : "";
+  return restQuery(agent, "GET", `/tokens/${encodeURIComponent(params.mint)}/depth${query}`);
 }
 
 /** Historical OHLCV candles (1m/5m/15m/1h/4h/1d) aggregated from the trade firehose. PRO=OHLCV 30d; ULTRA=+net flow, liquidity delta, full history. PRO/ULTRA only. */
