@@ -41,6 +41,7 @@
     "type": "git",
     "url": "https://github.com/madeonsol/solana-agent-kit-plugin-madeonsol"
   },
+  "homepage": "https://madeonsol.com/solana-api",
   "peerDependencies": {
     "solana-agent-kit": ">=2.0.0",
     "@x402/fetch": ">=0.1.0",
