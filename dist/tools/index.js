@@ -157,6 +157,67 @@ export async function deployerHistory(agent, params) {
     const qs = params.limit !== undefined ? `?limit=${params.limit}` : "";
     return restQuery(agent, "GET", `/deployer-hunter/${encodeURIComponent(params.wallet)}/history${qs}`);
 }
+// ── Deployer hunter: reputation, leaderboard, outcomes (msk_ key only) ──
+//
+// "Bonding" is the pump.fun graduation event. `bonding_rate` is LIFETIME,
+// `recent_bond_rate` is the ROLLING recent window — the gap between them is the
+// signal, not either alone. `runner_rate` means nothing until
+// `labeled_tokens >= 3`.
+/** Build a query string, dropping unset params (`?tier=` is a 400, not "unset"). */
+function buildQs(params) {
+    if (!params)
+        return "";
+    const sp = new URLSearchParams();
+    for (const [k, v] of Object.entries(params))
+        if (v !== undefined)
+            sp.set(k, String(v));
+    const s = sp.toString();
+    return s ? `?${s}` : "";
+}
+/** Chain-wide deployer stats — tracked count, bonds detected, bond rate, tier counts. */
+export async function deployerStats(agent) {
+    return restQuery(agent, "GET", "/deployer-hunter/stats");
+}
+/**
+ * Deployer reputation leaderboard, excluding unranked deployers. Compare
+ * `bonding_rate` (lifetime) against `recent_bond_rate` (rolling): a deployer at
+ * 0.40 lifetime and 0.05 recent is cooling off.
+ */
+export async function deployerLeaderboard(agent, params) {
+    const qs = buildQs(params);
+    return restQuery(agent, "GET", `/deployer-hunter/leaderboard${qs}`);
+}
+/**
+ * One deployer's profile. An UNTRACKED wallet returns zeroed counters, NOT a
+ * 404 — check `total_deployed` before drawing a conclusion about a wallet.
+ */
+export async function deployerProfile(agent, params) {
+    return restQuery(agent, "GET", `/deployer-hunter/${encodeURIComponent(params.wallet)}`);
+}
+/** Every token one deployer launched, with time-to-bond and peak MC. */
+export async function deployerTokens(agent, params) {
+    const { wallet, ...rest } = params;
+    const qs = buildQs(rest);
+    return restQuery(agent, "GET", `/deployer-hunter/${encodeURIComponent(wallet)}/tokens${qs}`);
+}
+/** Alert volume plus per-tier bond-rate and MC-multiplier distributions. */
+export async function deployerAlertStats(agent, params) {
+    const qs = buildQs(params);
+    return restQuery(agent, "GET", `/deployer-hunter/alert-stats${qs}`);
+}
+/** Best recent tokens from ranked (non-unranked) deployers, by peak MC multiple. */
+export async function deployerBestTokens(agent, params) {
+    const qs = buildQs(params);
+    return restQuery(agent, "GET", `/deployer-hunter/best-tokens${qs}`);
+}
+/**
+ * Fresh graduations from tracked deployers. Poll incrementally: pass the
+ * previous response's `next_since` back as `since`.
+ */
+export async function deployerRecentBonds(agent, params) {
+    const qs = buildQs(params);
+    return restQuery(agent, "GET", `/deployer-hunter/recent-bonds${qs}`);
+}
 // ── REST helper (webhooks, streaming, alpha, copy-trade, wallet-tracker) ──
 async function restQuery(agent, method, path, body) {
     await initAuth(agent);

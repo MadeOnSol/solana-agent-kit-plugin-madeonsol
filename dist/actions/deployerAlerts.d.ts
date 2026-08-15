@@ -20,13 +20,13 @@ export declare const deployerAlertsAction: {
     }, "strip", z.ZodTypeAny, {
         limit: number;
         offset: number;
-        since?: string | undefined;
         tier?: "elite" | "good" | "moderate" | "rising" | "cold" | undefined;
+        since?: string | undefined;
     }, {
         limit?: number | undefined;
-        since?: string | undefined;
-        offset?: number | undefined;
         tier?: "elite" | "good" | "moderate" | "rising" | "cold" | undefined;
+        offset?: number | undefined;
+        since?: string | undefined;
     }>;
     handler: (agent: unknown, input: {
         limit?: number;

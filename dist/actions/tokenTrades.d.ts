@@ -26,17 +26,17 @@ export declare const tokenTradesAction: {
         mint: string;
         limit?: number | undefined;
         wallet?: string | undefined;
+        since?: number | undefined;
         action?: "buy" | "sell" | undefined;
         cursor?: string | undefined;
-        since?: number | undefined;
         until?: number | undefined;
     }, {
         mint: string;
         limit?: number | undefined;
         wallet?: string | undefined;
+        since?: number | undefined;
         action?: "buy" | "sell" | undefined;
         cursor?: string | undefined;
-        since?: number | undefined;
         until?: number | undefined;
     }>;
     handler: (agent: unknown, input: {

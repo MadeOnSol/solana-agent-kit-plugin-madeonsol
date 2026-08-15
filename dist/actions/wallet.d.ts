@@ -163,18 +163,18 @@ export declare const walletTradesAction: {
     }, "strip", z.ZodTypeAny, {
         address: string;
         limit?: number | undefined;
+        since?: number | undefined;
         action?: "buy" | "sell" | undefined;
         cursor?: string | undefined;
         token_mint?: string | undefined;
-        since?: number | undefined;
         until?: number | undefined;
     }, {
         address: string;
         limit?: number | undefined;
+        since?: number | undefined;
         action?: "buy" | "sell" | undefined;
         cursor?: string | undefined;
         token_mint?: string | undefined;
-        since?: number | undefined;
         until?: number | undefined;
     }>;
     handler: (agent: unknown, input: {

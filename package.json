@@ -1,6 +1,6 @@
 {
   "name": "solana-agent-kit-plugin-madeonsol",
-  "version": "1.19.3",
+  "version": "1.20.0",
   "description": "Solana Agent Kit plugin for MadeOnSol — KOL intelligence and deployer analytics via x402 micropayments",
   "type": "module",
   "main": "dist/index.js",
@@ -43,12 +43,29 @@
   },
   "homepage": "https://madeonsol.com/solana-api",
   "peerDependencies": {
-    "solana-agent-kit": ">=2.0.0",
-    "@x402/fetch": ">=0.1.0",
-    "@x402/core": ">=0.1.0",
-    "@x402/svm": ">=0.1.0",
-    "@solana/kit": ">=2.0.0",
-    "@scure/base": ">=1.0.0"
+    "solana-agent-kit": "^2.0.0",
+    "@x402/fetch": "^2.8.0",
+    "@x402/core": "^2.8.0",
+    "@x402/svm": "^2.8.0",
+    "@solana/kit": "^5.5.1",
+    "@scure/base": "^2.0.0"
+  },
+  "peerDependenciesMeta": {
+    "@x402/fetch": {
+      "optional": true
+    },
+    "@x402/core": {
+      "optional": true
+    },
+    "@x402/svm": {
+      "optional": true
+    },
+    "@solana/kit": {
+      "optional": true
+    },
+    "@scure/base": {
+      "optional": true
+    }
   },
   "dependencies": {
     "zod": "^3.24.0"

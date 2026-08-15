@@ -110,6 +110,52 @@ export declare function deployerHistory(agent: Agent, params: {
     wallet: string;
     limit?: number;
 }): Promise<any>;
+/** Chain-wide deployer stats — tracked count, bonds detected, bond rate, tier counts. */
+export declare function deployerStats(agent: Agent): Promise<any>;
+/**
+ * Deployer reputation leaderboard, excluding unranked deployers. Compare
+ * `bonding_rate` (lifetime) against `recent_bond_rate` (rolling): a deployer at
+ * 0.40 lifetime and 0.05 recent is cooling off.
+ */
+export declare function deployerLeaderboard(agent: Agent, params?: {
+    tier?: string;
+    sort?: string;
+    limit?: number;
+    offset?: number;
+}): Promise<any>;
+/**
+ * One deployer's profile. An UNTRACKED wallet returns zeroed counters, NOT a
+ * 404 — check `total_deployed` before drawing a conclusion about a wallet.
+ */
+export declare function deployerProfile(agent: Agent, params: {
+    wallet: string;
+}): Promise<any>;
+/** Every token one deployer launched, with time-to-bond and peak MC. */
+export declare function deployerTokens(agent: Agent, params: {
+    wallet: string;
+    limit?: number;
+    offset?: number;
+    only_bonded?: boolean;
+}): Promise<any>;
+/** Alert volume plus per-tier bond-rate and MC-multiplier distributions. */
+export declare function deployerAlertStats(agent: Agent, params?: {
+    period?: string;
+}): Promise<any>;
+/** Best recent tokens from ranked (non-unranked) deployers, by peak MC multiple. */
+export declare function deployerBestTokens(agent: Agent, params?: {
+    period?: string;
+    limit?: number;
+}): Promise<any>;
+/**
+ * Fresh graduations from tracked deployers. Poll incrementally: pass the
+ * previous response's `next_since` back as `since`.
+ */
+export declare function deployerRecentBonds(agent: Agent, params?: {
+    limit?: number;
+    since?: string;
+    tier?: string;
+    peak_mc_min?: number;
+}): Promise<any>;
 export declare function createWebhook(agent: Agent, params: {
     url: string;
     events: string[];

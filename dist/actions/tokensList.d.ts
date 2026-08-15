@@ -38,6 +38,7 @@ export declare const tokensListAction: {
     }, "strip", z.ZodTypeAny, {
         limit: number;
         sort?: "mc_desc" | "mc_asc" | "last_trade_desc" | "liquidity_desc" | "cumulative_volume_desc" | "mc_change_5m_desc" | "mc_change_1h_desc" | "volume_1h_desc" | "trending" | undefined;
+        offset?: number | undefined;
         min_mc?: number | undefined;
         max_mc?: number | undefined;
         min_liq?: number | undefined;
@@ -53,10 +54,10 @@ export declare const tokensListAction: {
         min_liq_mc_ratio?: number | undefined;
         max_liq_mc_ratio?: number | undefined;
         deployer_tier?: "elite" | "good" | "moderate" | "rising" | "cold" | "unranked" | undefined;
-        offset?: number | undefined;
     }, {
         sort?: "mc_desc" | "mc_asc" | "last_trade_desc" | "liquidity_desc" | "cumulative_volume_desc" | "mc_change_5m_desc" | "mc_change_1h_desc" | "volume_1h_desc" | "trending" | undefined;
         limit?: number | undefined;
+        offset?: number | undefined;
         min_mc?: number | undefined;
         max_mc?: number | undefined;
         min_liq?: number | undefined;
@@ -72,7 +73,6 @@ export declare const tokensListAction: {
         min_liq_mc_ratio?: number | undefined;
         max_liq_mc_ratio?: number | undefined;
         deployer_tier?: "elite" | "good" | "moderate" | "rising" | "cold" | "unranked" | undefined;
-        offset?: number | undefined;
     }>;
     handler: (agent: unknown, input: {
         min_mc?: number;

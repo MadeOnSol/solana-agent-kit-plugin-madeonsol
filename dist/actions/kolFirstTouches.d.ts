@@ -29,8 +29,8 @@ export declare const kolFirstTouchesAction: {
         include: z.ZodOptional<z.ZodString>;
     }, "strip", z.ZodTypeAny, {
         limit: number;
-        before?: string | undefined;
         since?: string | undefined;
+        before?: string | undefined;
         kol?: string | undefined;
         min_kol_winrate_7d?: number | undefined;
         min_scout_tier?: "S" | "A" | "B" | "C" | undefined;
@@ -43,8 +43,8 @@ export declare const kolFirstTouchesAction: {
         include?: string | undefined;
     }, {
         limit?: number | undefined;
-        before?: string | undefined;
         since?: string | undefined;
+        before?: string | undefined;
         kol?: string | undefined;
         min_kol_winrate_7d?: number | undefined;
         min_scout_tier?: "S" | "A" | "B" | "C" | undefined;

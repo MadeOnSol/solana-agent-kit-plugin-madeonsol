@@ -17,6 +17,15 @@ import { tokenBundleAction } from "./actions/tokenBundle.js";
 import { tokenPoolsAction } from "./actions/tokenPools.js";
 import { tokenDepthAction } from "./actions/tokenDepth.js";
 import { deployerHistoryAction } from "./actions/deployerHistory.js";
+import {
+  deployerStatsAction,
+  deployerLeaderboardAction,
+  deployerProfileAction,
+  deployerTokensAction,
+  deployerAlertStatsAction,
+  deployerBestTokensAction,
+  deployerRecentBondsAction,
+} from "./actions/deployerHunter.js";
 import { tokenCandlesAction } from "./actions/tokenCandles.js";
 import { tokenFlowAction } from "./actions/tokenFlow.js";
 import { tokenRiskBatchAction } from "./actions/tokenRiskBatch.js";
@@ -30,6 +39,13 @@ import {
   alphaLeaderboard, alphaWallet, alphaLinked,
   tokenCapTable, tokenBuyerQuality, tokenRisk, tokenRiskBatch, tokenBundle, tokenPools, tokenDepth, tokenCandles, tokenFlow, tokenTrades,
   deployerHistory,
+  deployerStats,
+  deployerLeaderboard,
+  deployerProfile,
+  deployerTokens,
+  deployerAlertStats,
+  deployerBestTokens,
+  deployerRecentBonds,
   copyTradeList, copyTradeCreate, copyTradeGet, copyTradeUpdate, copyTradeDelete, copyTradeSignals,
   coordinationAlertsList, coordinationAlertsCreate, coordinationAlertsGet, coordinationAlertsUpdate, coordinationAlertsDelete,
   kolFirstTouches, firstTouchSubscriptionsList, firstTouchSubscriptionsCreate, firstTouchSubscriptionsGet, firstTouchSubscriptionsUpdate, firstTouchSubscriptionsDelete,
@@ -78,6 +94,13 @@ const MadeOnSolPlugin = {
     tokenFlow,
     tokenTrades,
     deployerHistory,
+    deployerStats,
+    deployerLeaderboard,
+    deployerProfile,
+    deployerTokens,
+    deployerAlertStats,
+    deployerBestTokens,
+    deployerRecentBonds,
     copyTradeList,
     copyTradeCreate,
     copyTradeGet,
@@ -140,6 +163,13 @@ const MadeOnSolPlugin = {
     tokenPoolsAction,
     tokenDepthAction,
     deployerHistoryAction,
+    deployerStatsAction,
+    deployerLeaderboardAction,
+    deployerProfileAction,
+    deployerTokensAction,
+    deployerAlertStatsAction,
+    deployerBestTokensAction,
+    deployerRecentBondsAction,
     tokenCandlesAction,
     tokenFlowAction,
     tokenTradesAction,
@@ -165,6 +195,13 @@ export {
   alphaLeaderboard, alphaWallet, alphaLinked,
   tokenCapTable, tokenBuyerQuality, tokenRisk, tokenRiskBatch, tokenBundle, tokenPools, tokenDepth, tokenCandles, tokenFlow, tokenTrades,
   deployerHistory,
+  deployerStats,
+  deployerLeaderboard,
+  deployerProfile,
+  deployerTokens,
+  deployerAlertStats,
+  deployerBestTokens,
+  deployerRecentBonds,
   copyTradeList, copyTradeCreate, copyTradeGet, copyTradeUpdate, copyTradeDelete, copyTradeSignals,
   coordinationAlertsList, coordinationAlertsCreate, coordinationAlertsGet, coordinationAlertsUpdate, coordinationAlertsDelete,
   kolFirstTouches, firstTouchSubscriptionsList, firstTouchSubscriptionsCreate, firstTouchSubscriptionsGet, firstTouchSubscriptionsUpdate, firstTouchSubscriptionsDelete,
@@ -176,4 +213,4 @@ export {
 export { kolFeedAction, kolCoordinationAction, kolLeaderboardAction, deployerAlertsAction, kolPnlAction, kolTrendingTokensAction, kolTokenEntryOrderAction, kolCompareAction, kolAlertsRecentAction, kolFirstTouchesAction };
 export { walletTrackerWatchlistAction, walletTrackerAddAction, walletTrackerRemoveAction, walletTrackerTradesAction, walletTrackerSummaryAction };
 export { walletStatsAction, walletPnlAction, walletPositionsAction, walletHoldingsAction, walletTradesAction };
-export { meAction, tokensListAction, almostBondedAction, tokenRiskAction, tokenRiskBatchAction, tokenBundleAction, tokenPoolsAction, tokenDepthAction, deployerHistoryAction, tokenCandlesAction, tokenFlowAction, tokenTradesAction, walletClassifyAction, streamSessionsAction, streamSessionKillAction };
+export { meAction, tokensListAction, almostBondedAction, tokenRiskAction, tokenRiskBatchAction, tokenBundleAction, tokenPoolsAction, tokenDepthAction, deployerHistoryAction, deployerStatsAction, deployerLeaderboardAction, deployerProfileAction, deployerTokensAction, deployerAlertStatsAction, deployerBestTokensAction, deployerRecentBondsAction, tokenCandlesAction, tokenFlowAction, tokenTradesAction, walletClassifyAction, streamSessionsAction, streamSessionKillAction };
