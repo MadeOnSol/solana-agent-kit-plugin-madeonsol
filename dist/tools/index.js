@@ -440,7 +440,10 @@ export async function tokenFlow(agent, params) {
 /**
  * Mint-scoped trade tape — every captured trade for a token, cursor-paginated newest first
  * (GET /tokens/{mint}/trades). Each trade: tx_signature, wallet_address, action, sol_amount,
- * token_amount, price_sol/price_usd, early_buyer_rank, slot, block_time, traded_at. Filter by
+ * token_amount, price_sol/price_usd (THIS trade's executed price = sol_amount / token_amount —
+ * the trader's all-in rate incl. swap fee and any account rent, not the pool mid),
+ * market_price_sol/market_price_usd (the canonical pool price near that slot, shared by every
+ * trade in it), early_buyer_rank, slot, block_time, traded_at. Filter by
  * `action`, `wallet`, `since`/`until` (unix sec); unlike walletTrades (90d default) the default
  * window is the FULL history. Coverage honesty: the tape starts 2026-04-12 and is
  * pump.fun-pipeline scoped — see the response `coverage` block (history_start, scope). PRO/ULTRA only.
