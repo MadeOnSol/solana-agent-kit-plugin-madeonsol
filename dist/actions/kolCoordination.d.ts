@@ -18,11 +18,11 @@ export declare const kolCoordinationAction: {
         min_kols: z.ZodDefault<z.ZodNumber>;
         limit: z.ZodDefault<z.ZodNumber>;
     }, "strip", z.ZodTypeAny, {
-        period: "1h" | "24h" | "6h" | "7d";
+        period: "1h" | "6h" | "24h" | "7d";
         min_kols: number;
         limit: number;
     }, {
-        period?: "1h" | "24h" | "6h" | "7d" | undefined;
+        period?: "1h" | "6h" | "24h" | "7d" | undefined;
         min_kols?: number | undefined;
         limit?: number | undefined;
     }>;

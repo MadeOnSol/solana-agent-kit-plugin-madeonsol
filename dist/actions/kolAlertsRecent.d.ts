@@ -20,13 +20,13 @@ export declare const kolAlertsRecentAction: {
         limit: z.ZodDefault<z.ZodNumber>;
     }, "strip", z.ZodTypeAny, {
         limit: number;
-        window: "1h" | "24h" | "6h" | "5m" | "15m";
+        window: "1h" | "6h" | "24h" | "5m" | "15m";
         types?: ("consensus_cluster" | "fresh_token_kol_buy" | "heating_up")[] | undefined;
         min_severity?: "high" | "medium" | "low" | undefined;
     }, {
         limit?: number | undefined;
         types?: ("consensus_cluster" | "fresh_token_kol_buy" | "heating_up")[] | undefined;
-        window?: "1h" | "24h" | "6h" | "5m" | "15m" | undefined;
+        window?: "1h" | "6h" | "24h" | "5m" | "15m" | undefined;
         min_severity?: "high" | "medium" | "low" | undefined;
     }>;
     handler: (agent: unknown, input: {

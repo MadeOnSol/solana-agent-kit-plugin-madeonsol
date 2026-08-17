@@ -17,6 +17,11 @@ import { tokenBundleAction } from "./actions/tokenBundle.js";
 import { tokenPoolsAction } from "./actions/tokenPools.js";
 import { tokenDepthAction } from "./actions/tokenDepth.js";
 import { tokenHoldersAction } from "./actions/tokenHolders.js";
+import { tokenLocksAction } from "./actions/tokenLocks.js";
+import { tokenLocksFeedAction } from "./actions/tokenLocksFeed.js";
+import { tokenUnlocksAction } from "./actions/tokenUnlocks.js";
+import { tokenFeeSharesAction } from "./actions/tokenFeeShares.js";
+import { tokenFeeClaimsAction } from "./actions/tokenFeeClaims.js";
 import { deployerHistoryAction } from "./actions/deployerHistory.js";
 import { deployerStatsAction, deployerLeaderboardAction, deployerProfileAction, deployerTokensAction, deployerAlertStatsAction, deployerBestTokensAction, deployerRecentBondsAction } from "./actions/deployerHunter.js";
 import { tokenCandlesAction } from "./actions/tokenCandles.js";
@@ -25,7 +30,7 @@ import { tokenRiskBatchAction } from "./actions/tokenRiskBatch.js";
 import { tokenTradesAction } from "./actions/tokenTrades.js";
 import { walletClassifyAction } from "./actions/walletClassify.js";
 import { streamSessionsAction, streamSessionKillAction } from "./actions/streamSessions.js";
-import { kolFeed, kolCoordination, kolLeaderboard, deployerAlerts, kolPnl, kolTrendingTokens, kolTokenEntryOrder, kolCompare, kolAlertsRecent, createWebhook, listWebhooks, deleteWebhook, testWebhook, getStreamToken, streamSessions, streamSessionKill, walletTrackerWatchlist, walletTrackerAdd, walletTrackerRemove, walletTrackerTrades, walletTrackerSummary, alphaLeaderboard, alphaWallet, alphaLinked, tokenCapTable, tokenBuyerQuality, tokenRisk, tokenRiskBatch, tokenBundle, tokenPools, tokenDepth, tokenHolders, tokenCandles, tokenFlow, tokenTrades, deployerHistory, deployerStats, deployerLeaderboard, deployerProfile, deployerTokens, deployerAlertStats, deployerBestTokens, deployerRecentBonds, copyTradeList, copyTradeCreate, copyTradeGet, copyTradeUpdate, copyTradeDelete, copyTradeSignals, coordinationAlertsList, coordinationAlertsCreate, coordinationAlertsGet, coordinationAlertsUpdate, coordinationAlertsDelete, kolFirstTouches, firstTouchSubscriptionsList, firstTouchSubscriptionsCreate, firstTouchSubscriptionsGet, firstTouchSubscriptionsUpdate, firstTouchSubscriptionsDelete, priceAlertsList, priceAlertsCreate, priceAlertsGet, priceAlertsUpdate, priceAlertsDelete, priceAlertsEvents, scoutLeaderboard, coordinationHistory, kolConsensus, peakHistory, walletStats, walletPnl, walletPositions, walletHoldings, walletTrades, walletClassify, me, tokensList, almostBonded } from "./tools/index.js";
+import { kolFeed, kolCoordination, kolLeaderboard, deployerAlerts, kolPnl, kolTrendingTokens, kolTokenEntryOrder, kolCompare, kolAlertsRecent, createWebhook, listWebhooks, deleteWebhook, testWebhook, getStreamToken, streamSessions, streamSessionKill, walletTrackerWatchlist, walletTrackerAdd, walletTrackerRemove, walletTrackerTrades, walletTrackerSummary, alphaLeaderboard, alphaWallet, alphaLinked, tokenCapTable, tokenBuyerQuality, tokenRisk, tokenRiskBatch, tokenBundle, tokenPools, tokenDepth, tokenHolders, tokenLocks, tokenLocksFeed, tokenUnlocks, tokenFeeShares, tokenFeeClaims, tokenCandles, tokenFlow, tokenTrades, deployerHistory, deployerStats, deployerLeaderboard, deployerProfile, deployerTokens, deployerAlertStats, deployerBestTokens, deployerRecentBonds, copyTradeList, copyTradeCreate, copyTradeGet, copyTradeUpdate, copyTradeDelete, copyTradeSignals, coordinationAlertsList, coordinationAlertsCreate, coordinationAlertsGet, coordinationAlertsUpdate, coordinationAlertsDelete, kolFirstTouches, firstTouchSubscriptionsList, firstTouchSubscriptionsCreate, firstTouchSubscriptionsGet, firstTouchSubscriptionsUpdate, firstTouchSubscriptionsDelete, priceAlertsList, priceAlertsCreate, priceAlertsGet, priceAlertsUpdate, priceAlertsDelete, priceAlertsEvents, scoutLeaderboard, coordinationHistory, kolConsensus, peakHistory, walletStats, walletPnl, walletPositions, walletHoldings, walletTrades, walletClassify, me, tokensList, almostBonded } from "./tools/index.js";
 import { walletStatsAction, walletPnlAction, walletPositionsAction, walletHoldingsAction, walletTradesAction } from "./actions/wallet.js";
 declare const MadeOnSolPlugin: {
     name: string;
@@ -62,6 +67,11 @@ declare const MadeOnSolPlugin: {
         tokenPools: typeof tokenPools;
         tokenDepth: typeof tokenDepth;
         tokenHolders: typeof tokenHolders;
+        tokenLocks: typeof tokenLocks;
+        tokenLocksFeed: typeof tokenLocksFeed;
+        tokenUnlocks: typeof tokenUnlocks;
+        tokenFeeShares: typeof tokenFeeShares;
+        tokenFeeClaims: typeof tokenFeeClaims;
         tokenCandles: typeof tokenCandles;
         tokenFlow: typeof tokenFlow;
         tokenTrades: typeof tokenTrades;
@@ -169,11 +179,11 @@ declare const MadeOnSolPlugin: {
             min_kols: import("zod").ZodDefault<import("zod").ZodNumber>;
             limit: import("zod").ZodDefault<import("zod").ZodNumber>;
         }, "strip", import("zod").ZodTypeAny, {
-            period: "1h" | "24h" | "6h" | "7d";
+            period: "1h" | "6h" | "24h" | "7d";
             min_kols: number;
             limit: number;
         }, {
-            period?: "1h" | "24h" | "6h" | "7d" | undefined;
+            period?: "1h" | "6h" | "24h" | "7d" | undefined;
             min_kols?: number | undefined;
             limit?: number | undefined;
         }>;
@@ -208,10 +218,10 @@ declare const MadeOnSolPlugin: {
             period: import("zod").ZodDefault<import("zod").ZodEnum<["today", "7d", "30d"]>>;
             limit: import("zod").ZodDefault<import("zod").ZodNumber>;
         }, "strip", import("zod").ZodTypeAny, {
-            period: "7d" | "today" | "30d";
+            period: "7d" | "30d" | "today";
             limit: number;
         }, {
-            period?: "7d" | "today" | "30d" | undefined;
+            period?: "7d" | "30d" | "today" | undefined;
             limit?: number | undefined;
         }>;
         handler: (agent: unknown, input: {
@@ -582,13 +592,13 @@ declare const MadeOnSolPlugin: {
             limit: import("zod").ZodDefault<import("zod").ZodNumber>;
         }, "strip", import("zod").ZodTypeAny, {
             limit: number;
-            window: "1h" | "24h" | "6h" | "5m" | "15m";
+            window: "1h" | "6h" | "24h" | "5m" | "15m";
             types?: ("consensus_cluster" | "fresh_token_kol_buy" | "heating_up")[] | undefined;
             min_severity?: "high" | "medium" | "low" | undefined;
         }, {
             limit?: number | undefined;
             types?: ("consensus_cluster" | "fresh_token_kol_buy" | "heating_up")[] | undefined;
-            window?: "1h" | "24h" | "6h" | "5m" | "15m" | undefined;
+            window?: "1h" | "6h" | "24h" | "5m" | "15m" | undefined;
             min_severity?: "high" | "medium" | "low" | undefined;
         }>;
         handler: (agent: unknown, input: {
@@ -935,6 +945,244 @@ declare const MadeOnSolPlugin: {
             mint: string;
             sizes?: number[];
         }) => Promise<{
+            status: string;
+            result: any;
+            message?: undefined;
+        } | {
+            status: string;
+            message: string;
+            result?: undefined;
+        }>;
+    } | {
+        name: string;
+        similes: string[];
+        description: string;
+        examples: {
+            input: {
+                mint: string;
+                status: string;
+            };
+            output: {
+                status: string;
+            };
+            explanation: string;
+        }[][];
+        schema: import("zod").ZodObject<{
+            mint: import("zod").ZodString;
+            status: import("zod").ZodOptional<import("zod").ZodEnum<["active", "completed", "cancelled", "closed"]>>;
+            program: import("zod").ZodOptional<import("zod").ZodEnum<["streamflow", "jupiter_lock", "bonfida_vesting"]>>;
+            limit: import("zod").ZodOptional<import("zod").ZodNumber>;
+        }, "strip", import("zod").ZodTypeAny, {
+            mint: string;
+            limit?: number | undefined;
+            status?: "active" | "completed" | "cancelled" | "closed" | undefined;
+            program?: "streamflow" | "jupiter_lock" | "bonfida_vesting" | undefined;
+        }, {
+            mint: string;
+            limit?: number | undefined;
+            status?: "active" | "completed" | "cancelled" | "closed" | undefined;
+            program?: "streamflow" | "jupiter_lock" | "bonfida_vesting" | undefined;
+        }>;
+        handler: (agent: unknown, input: import("./tools/index.js").TokenLocksParams) => Promise<{
+            status: string;
+            result: any;
+            message?: undefined;
+        } | {
+            status: string;
+            message: string;
+            result?: undefined;
+        }>;
+    } | {
+        name: string;
+        similes: string[];
+        description: string;
+        examples: ({
+            input: {
+                min_usd: number;
+                limit: number;
+            };
+            output: {
+                status: string;
+            };
+            explanation: string;
+        }[] | {
+            input: {
+                program: string;
+                kind: string;
+                since: string;
+            };
+            output: {
+                status: string;
+            };
+            explanation: string;
+        }[])[];
+        schema: import("zod").ZodObject<{
+            since: import("zod").ZodOptional<import("zod").ZodString>;
+            before: import("zod").ZodOptional<import("zod").ZodString>;
+            mint: import("zod").ZodOptional<import("zod").ZodString>;
+            sender: import("zod").ZodOptional<import("zod").ZodString>;
+            recipient: import("zod").ZodOptional<import("zod").ZodString>;
+            program: import("zod").ZodOptional<import("zod").ZodEnum<["streamflow", "jupiter_lock", "bonfida_vesting"]>>;
+            kind: import("zod").ZodOptional<import("zod").ZodEnum<["lock", "vesting"]>>;
+            status: import("zod").ZodOptional<import("zod").ZodEnum<["active", "completed", "cancelled", "closed"]>>;
+            min_usd: import("zod").ZodOptional<import("zod").ZodNumber>;
+            min_pct_of_supply: import("zod").ZodOptional<import("zod").ZodNumber>;
+            include_estimated: import("zod").ZodOptional<import("zod").ZodEnum<["1", "0", "true", "false"]>>;
+            limit: import("zod").ZodOptional<import("zod").ZodNumber>;
+        }, "strip", import("zod").ZodTypeAny, {
+            limit?: number | undefined;
+            mint?: string | undefined;
+            since?: string | undefined;
+            before?: string | undefined;
+            status?: "active" | "completed" | "cancelled" | "closed" | undefined;
+            program?: "streamflow" | "jupiter_lock" | "bonfida_vesting" | undefined;
+            min_usd?: number | undefined;
+            sender?: string | undefined;
+            recipient?: string | undefined;
+            kind?: "lock" | "vesting" | undefined;
+            min_pct_of_supply?: number | undefined;
+            include_estimated?: "true" | "false" | "1" | "0" | undefined;
+        }, {
+            limit?: number | undefined;
+            mint?: string | undefined;
+            since?: string | undefined;
+            before?: string | undefined;
+            status?: "active" | "completed" | "cancelled" | "closed" | undefined;
+            program?: "streamflow" | "jupiter_lock" | "bonfida_vesting" | undefined;
+            min_usd?: number | undefined;
+            sender?: string | undefined;
+            recipient?: string | undefined;
+            kind?: "lock" | "vesting" | undefined;
+            min_pct_of_supply?: number | undefined;
+            include_estimated?: "true" | "false" | "1" | "0" | undefined;
+        }>;
+        handler: (agent: unknown, input: import("./tools/index.js").TokenLocksFeedParams) => Promise<{
+            status: string;
+            result: any;
+            message?: undefined;
+        } | {
+            status: string;
+            message: string;
+            result?: undefined;
+        }>;
+    } | {
+        name: string;
+        similes: string[];
+        description: string;
+        examples: ({
+            input: {
+                within: string;
+                sort: string;
+            };
+            output: {
+                status: string;
+            };
+            explanation: string;
+        }[] | {
+            input: {
+                mint: string;
+                within: string;
+            };
+            output: {
+                status: string;
+            };
+            explanation: string;
+        }[])[];
+        schema: import("zod").ZodObject<{
+            within: import("zod").ZodOptional<import("zod").ZodEnum<["1h", "6h", "24h", "3d", "7d", "14d", "30d", "90d"]>>;
+            mint: import("zod").ZodOptional<import("zod").ZodString>;
+            program: import("zod").ZodOptional<import("zod").ZodEnum<["streamflow", "jupiter_lock", "bonfida_vesting"]>>;
+            kind: import("zod").ZodOptional<import("zod").ZodEnum<["lock", "vesting"]>>;
+            min_usd: import("zod").ZodOptional<import("zod").ZodNumber>;
+            min_pct_of_supply: import("zod").ZodOptional<import("zod").ZodNumber>;
+            sort: import("zod").ZodOptional<import("zod").ZodEnum<["soonest", "largest_usd", "largest_pct"]>>;
+            limit: import("zod").ZodOptional<import("zod").ZodNumber>;
+        }, "strip", import("zod").ZodTypeAny, {
+            sort?: "soonest" | "largest_usd" | "largest_pct" | undefined;
+            limit?: number | undefined;
+            mint?: string | undefined;
+            program?: "streamflow" | "jupiter_lock" | "bonfida_vesting" | undefined;
+            min_usd?: number | undefined;
+            kind?: "lock" | "vesting" | undefined;
+            min_pct_of_supply?: number | undefined;
+            within?: "1h" | "6h" | "24h" | "3d" | "7d" | "14d" | "30d" | "90d" | undefined;
+        }, {
+            sort?: "soonest" | "largest_usd" | "largest_pct" | undefined;
+            limit?: number | undefined;
+            mint?: string | undefined;
+            program?: "streamflow" | "jupiter_lock" | "bonfida_vesting" | undefined;
+            min_usd?: number | undefined;
+            kind?: "lock" | "vesting" | undefined;
+            min_pct_of_supply?: number | undefined;
+            within?: "1h" | "6h" | "24h" | "3d" | "7d" | "14d" | "30d" | "90d" | undefined;
+        }>;
+        handler: (agent: unknown, input: import("./tools/index.js").TokenUnlocksParams) => Promise<{
+            status: string;
+            result: any;
+            message?: undefined;
+        } | {
+            status: string;
+            message: string;
+            result?: undefined;
+        }>;
+    } | {
+        name: string;
+        similes: string[];
+        description: string;
+        examples: ({
+            input: {
+                type: string;
+                min_sol: number;
+            };
+            output: {
+                status: string;
+            };
+            explanation: string;
+        }[] | {
+            input: {
+                type: string;
+                social_platform: number;
+            };
+            output: {
+                status: string;
+            };
+            explanation: string;
+        }[])[];
+        schema: import("zod").ZodObject<{
+            type: import("zod").ZodOptional<import("zod").ZodString>;
+            mint: import("zod").ZodOptional<import("zod").ZodString>;
+            recipient: import("zod").ZodOptional<import("zod").ZodString>;
+            actor: import("zod").ZodOptional<import("zod").ZodString>;
+            social_platform: import("zod").ZodOptional<import("zod").ZodNumber>;
+            social_user_id: import("zod").ZodOptional<import("zod").ZodString>;
+            min_sol: import("zod").ZodOptional<import("zod").ZodNumber>;
+            since: import("zod").ZodOptional<import("zod").ZodString>;
+            before: import("zod").ZodOptional<import("zod").ZodString>;
+            limit: import("zod").ZodOptional<import("zod").ZodNumber>;
+        }, "strip", import("zod").ZodTypeAny, {
+            limit?: number | undefined;
+            mint?: string | undefined;
+            since?: string | undefined;
+            before?: string | undefined;
+            type?: string | undefined;
+            recipient?: string | undefined;
+            social_platform?: number | undefined;
+            min_sol?: number | undefined;
+            actor?: string | undefined;
+            social_user_id?: string | undefined;
+        }, {
+            limit?: number | undefined;
+            mint?: string | undefined;
+            since?: string | undefined;
+            before?: string | undefined;
+            type?: string | undefined;
+            recipient?: string | undefined;
+            social_platform?: number | undefined;
+            min_sol?: number | undefined;
+            actor?: string | undefined;
+            social_user_id?: string | undefined;
+        }>;
+        handler: (agent: unknown, input: import("./tools/index.js").TokenFeeClaimsParams) => Promise<{
             status: string;
             result: any;
             message?: undefined;
@@ -1546,8 +1794,8 @@ declare const MadeOnSolPlugin: {
     initialize(_agent: unknown): void;
 };
 export default MadeOnSolPlugin;
-export { kolFeed, kolCoordination, kolLeaderboard, deployerAlerts, kolPnl, kolTrendingTokens, kolTokenEntryOrder, kolCompare, kolAlertsRecent, createWebhook, listWebhooks, deleteWebhook, testWebhook, getStreamToken, streamSessions, streamSessionKill, walletTrackerWatchlist, walletTrackerAdd, walletTrackerRemove, walletTrackerTrades, walletTrackerSummary, alphaLeaderboard, alphaWallet, alphaLinked, tokenCapTable, tokenBuyerQuality, tokenRisk, tokenRiskBatch, tokenBundle, tokenPools, tokenDepth, tokenHolders, tokenCandles, tokenFlow, tokenTrades, deployerHistory, deployerStats, deployerLeaderboard, deployerProfile, deployerTokens, deployerAlertStats, deployerBestTokens, deployerRecentBonds, copyTradeList, copyTradeCreate, copyTradeGet, copyTradeUpdate, copyTradeDelete, copyTradeSignals, coordinationAlertsList, coordinationAlertsCreate, coordinationAlertsGet, coordinationAlertsUpdate, coordinationAlertsDelete, kolFirstTouches, firstTouchSubscriptionsList, firstTouchSubscriptionsCreate, firstTouchSubscriptionsGet, firstTouchSubscriptionsUpdate, firstTouchSubscriptionsDelete, priceAlertsList, priceAlertsCreate, priceAlertsGet, priceAlertsUpdate, priceAlertsDelete, priceAlertsEvents, scoutLeaderboard, coordinationHistory, kolConsensus, peakHistory, walletStats, walletPnl, walletPositions, walletHoldings, walletTrades, walletClassify, me, tokensList, almostBonded, };
+export { kolFeed, kolCoordination, kolLeaderboard, deployerAlerts, kolPnl, kolTrendingTokens, kolTokenEntryOrder, kolCompare, kolAlertsRecent, createWebhook, listWebhooks, deleteWebhook, testWebhook, getStreamToken, streamSessions, streamSessionKill, walletTrackerWatchlist, walletTrackerAdd, walletTrackerRemove, walletTrackerTrades, walletTrackerSummary, alphaLeaderboard, alphaWallet, alphaLinked, tokenCapTable, tokenBuyerQuality, tokenRisk, tokenRiskBatch, tokenBundle, tokenPools, tokenDepth, tokenHolders, tokenLocks, tokenLocksFeed, tokenUnlocks, tokenFeeShares, tokenFeeClaims, tokenCandles, tokenFlow, tokenTrades, deployerHistory, deployerStats, deployerLeaderboard, deployerProfile, deployerTokens, deployerAlertStats, deployerBestTokens, deployerRecentBonds, copyTradeList, copyTradeCreate, copyTradeGet, copyTradeUpdate, copyTradeDelete, copyTradeSignals, coordinationAlertsList, coordinationAlertsCreate, coordinationAlertsGet, coordinationAlertsUpdate, coordinationAlertsDelete, kolFirstTouches, firstTouchSubscriptionsList, firstTouchSubscriptionsCreate, firstTouchSubscriptionsGet, firstTouchSubscriptionsUpdate, firstTouchSubscriptionsDelete, priceAlertsList, priceAlertsCreate, priceAlertsGet, priceAlertsUpdate, priceAlertsDelete, priceAlertsEvents, scoutLeaderboard, coordinationHistory, kolConsensus, peakHistory, walletStats, walletPnl, walletPositions, walletHoldings, walletTrades, walletClassify, me, tokensList, almostBonded, };
 export { kolFeedAction, kolCoordinationAction, kolLeaderboardAction, deployerAlertsAction, kolPnlAction, kolTrendingTokensAction, kolTokenEntryOrderAction, kolCompareAction, kolAlertsRecentAction, kolFirstTouchesAction };
 export { walletTrackerWatchlistAction, walletTrackerAddAction, walletTrackerRemoveAction, walletTrackerTradesAction, walletTrackerSummaryAction };
 export { walletStatsAction, walletPnlAction, walletPositionsAction, walletHoldingsAction, walletTradesAction };
-export { meAction, tokensListAction, almostBondedAction, tokenRiskAction, tokenRiskBatchAction, tokenBundleAction, tokenPoolsAction, tokenDepthAction, tokenHoldersAction, deployerHistoryAction, deployerStatsAction, deployerLeaderboardAction, deployerProfileAction, deployerTokensAction, deployerAlertStatsAction, deployerBestTokensAction, deployerRecentBondsAction, tokenCandlesAction, tokenFlowAction, tokenTradesAction, walletClassifyAction, streamSessionsAction, streamSessionKillAction };
+export { meAction, tokensListAction, almostBondedAction, tokenRiskAction, tokenRiskBatchAction, tokenBundleAction, tokenPoolsAction, tokenDepthAction, tokenHoldersAction, tokenLocksAction, tokenLocksFeedAction, tokenUnlocksAction, tokenFeeSharesAction, tokenFeeClaimsAction, deployerHistoryAction, deployerStatsAction, deployerLeaderboardAction, deployerProfileAction, deployerTokensAction, deployerAlertStatsAction, deployerBestTokensAction, deployerRecentBondsAction, tokenCandlesAction, tokenFlowAction, tokenTradesAction, walletClassifyAction, streamSessionsAction, streamSessionKillAction };

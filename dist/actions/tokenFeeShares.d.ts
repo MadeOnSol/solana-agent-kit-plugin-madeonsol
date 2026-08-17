@@ -1,12 +1,11 @@
 import { z } from "zod";
-export declare const kolLeaderboardAction: {
+export declare const tokenFeeSharesAction: {
     name: string;
     similes: string[];
     description: string;
     examples: {
         input: {
-            period: string;
-            limit: number;
+            mint: string;
         };
         output: {
             status: string;
@@ -14,18 +13,14 @@ export declare const kolLeaderboardAction: {
         explanation: string;
     }[][];
     schema: z.ZodObject<{
-        period: z.ZodDefault<z.ZodEnum<["today", "7d", "30d"]>>;
-        limit: z.ZodDefault<z.ZodNumber>;
+        mint: z.ZodString;
     }, "strip", z.ZodTypeAny, {
-        period: "7d" | "30d" | "today";
-        limit: number;
+        mint: string;
     }, {
-        period?: "7d" | "30d" | "today" | undefined;
-        limit?: number | undefined;
+        mint: string;
     }>;
     handler: (agent: unknown, input: {
-        period?: string;
-        limit?: number;
+        mint: string;
     }) => Promise<{
         status: string;
         result: any;

@@ -563,6 +563,176 @@ export async function tokenHolders(agent: Agent, params: { mint: string }) {
   return restQuery(agent, "GET", `/tokens/${encodeURIComponent(params.mint)}/holders`);
 }
 
+// ── Token locks & vesting + pump.fun fee sharing (PRO+, keyed API only — no x402 route) ──
+
+export type TokenLockProgram = "streamflow" | "jupiter_lock" | "bonfida_vesting";
+export type TokenLockKind = "lock" | "vesting";
+export type TokenLockStatus = "active" | "completed" | "cancelled" | "closed";
+
+export interface TokenLocksParams {
+  mint: string;
+  /** Filter the list (summary always covers all rows). */
+  status?: TokenLockStatus;
+  program?: TokenLockProgram;
+  /** 1–500, default 200. */
+  limit?: number;
+}
+
+export interface TokenLocksFeedParams {
+  /** ISO 8601 — only contracts created after this instant (pagination.next_since). */
+  since?: string;
+  /** ISO 8601 — page back (pagination.next_before). */
+  before?: string;
+  mint?: string;
+  sender?: string;
+  recipient?: string;
+  program?: TokenLockProgram;
+  kind?: TokenLockKind;
+  status?: TokenLockStatus;
+  /** Deposited amount ≥ (needs a known price; post-filter). */
+  min_usd?: number;
+  /** 0–100 (post-filter). */
+  min_pct_of_supply?: number;
+  /** "1" to include backfilled Jupiter Lock rows (estimated created_at); excluded by default. */
+  include_estimated?: "1" | "0" | "true" | "false" | boolean;
+  /** 1–100, default 50. */
+  limit?: number;
+}
+
+export interface TokenUnlocksParams {
+  within?: "1h" | "6h" | "24h" | "3d" | "7d" | "14d" | "30d" | "90d";
+  mint?: string;
+  program?: TokenLockProgram;
+  kind?: TokenLockKind;
+  /** Next-event amount ≥ (needs a known price). */
+  min_usd?: number;
+  min_pct_of_supply?: number;
+  sort?: "soonest" | "largest_usd" | "largest_pct";
+  /** 1–200, default 50. */
+  limit?: number;
+}
+
+export interface TokenFeeClaimsParams {
+  /** Comma list of event types (default: all except creator_claim). */
+  type?: string;
+  mint?: string;
+  /** Payout / claim recipient wallet, or new creator. */
+  recipient?: string;
+  /** Transaction signer. */
+  actor?: string;
+  /** Raw platform id (2 = X). */
+  social_platform?: number;
+  /** Platform-native numeric user id. */
+  social_user_id?: string;
+  /** Amount floor in SOL. */
+  min_sol?: number;
+  since?: string;
+  before?: string;
+  /** 1–100, default 50. */
+  limit?: number;
+}
+
+function toQuery(params: Record<string, unknown> | undefined, skip: string[] = []): string {
+  const qs = new URLSearchParams();
+  for (const [k, v] of Object.entries(params ?? {})) {
+    if (skip.includes(k) || v === undefined || v === null) continue;
+    qs.set(k, String(v));
+  }
+  const q = qs.toString();
+  return q ? `?${q}` : "";
+}
+
+/**
+ * Token locks & vesting on ONE mint (GET /tokens/{mint}/locks) — every Streamflow / Jupiter Lock /
+ * Bonfida vesting contract decoded from the locker programs' account state, with the schedule
+ * (start/cliff/end, period, per-period + cliff amounts), the terms (cancelable_by_sender = the
+ * locker can pull it — funds are locked against the RECIPIENT, not the locker; cancelable_by_recipient,
+ * transferable, can_topup) and a LIVE-derived view (locked_*, unlocked_*, withdrawn_*, claimable_*,
+ * status active|completed|cancelled|closed, next_unlock {at, kind cliff|period|final|tranche, amount}),
+ * plus a summary (lock_count exact, complete=false above 5000 contracts, active_count, by_program /
+ * by_kind, distinct_lockers, locked / deposited totals raw+ui+usd+% of supply, unlocking_7d_* /
+ * unlocking_30d_*, nearest next_unlock, active_cancelable_by_sender). Answers "did the team lock,
+ * how much, until when, and can they pull it". Base-unit amounts are digit STRINGS; ui/usd/pct
+ * null when decimals or price are unknown (token.facts_resolved). status/program filter the list
+ * only. LP LOCKS ARE NOT INCLUDED (token/vesting locks only). PRO/ULTRA only, keyed API only.
+ */
+export async function tokenLocks(agent: Agent, params: TokenLocksParams) {
+  const query = toQuery(params as unknown as Record<string, unknown>, ["mint"]);
+  return restQuery(agent, "GET", `/tokens/${encodeURIComponent(params.mint)}/locks${query}`);
+}
+
+/**
+ * Cross-token feed of NEW lock / vesting contracts (GET /tokens/locks), newest first — who just
+ * locked tokens, of what mint, how much, until when — from Streamflow, Jupiter Lock and Bonfida.
+ * Same row shape as tokenLocks + token {symbol, name, decimals, price_usd, market_cap_usd}. Poll with
+ * since (cursor pagination.next_since), page back with before, or subscribe to WS channel
+ * `token:locks` (event `token:lock`) for a push the moment the contract lands. Filters mint, sender,
+ * recipient, program, kind, status, min_usd, min_pct_of_supply (last three post-filter, ×4
+ * over-fetch), include_estimated="1" to include backfilled Jupiter Lock rows with an estimated
+ * created_at. Base-unit amounts are digit STRINGS. LP locks NOT included. PRO/ULTRA only, keyed API only.
+ */
+export async function tokenLocksFeed(agent: Agent, params: TokenLocksFeedParams = {}) {
+  const query = toQuery(params as unknown as Record<string, unknown>);
+  return restQuery(agent, "GET", `/tokens/locks${query}`);
+}
+
+/**
+ * Upcoming unlock EVENTS (GET /tokens/unlocks) across all active lock / vesting contracts inside
+ * `within` (1h|6h|24h|3d|7d|14d|30d|90d, default 7d) — cliffs, periodic releases (hourly or coarser)
+ * and final unlocks: which tokens have locked supply hitting the market, how much, from whose lock.
+ * One entry per active contract = its NEXT event in the window (unlock_at, in_seconds, event
+ * cliff|period|final|tranche, amount_raw/amount/amount_usd/amount_pct_of_supply) plus
+ * window_amount_* = that contract's TOTAL release over the whole window, mint, token, and lock (a
+ * subset of the tokenLocks row incl. cancelable_by_sender). Continuous per-second streams contribute
+ * only cliff/final events. sort soonest (default) | largest_usd | largest_pct; filters mint, program,
+ * kind, min_usd, min_pct_of_supply. Response { window {within, from, to}, unlocks[], pagination
+ * {limit, count, total_in_window, has_more} }. Base-unit amounts are digit STRINGS; usd null when
+ * price unknown or phantom (implied MC > $100B). LP locks NOT included. PRO/ULTRA only, keyed API only.
+ */
+export async function tokenUnlocks(agent: Agent, params: TokenUnlocksParams = {}) {
+  const query = toQuery(params as unknown as Record<string, unknown>);
+  return restQuery(agent, "GET", `/tokens/unlocks${query}`);
+}
+
+/**
+ * pump.fun creator-fee sharing on ONE coin (GET /tokens/{mint}/fee-shares) — the on-chain
+ * SharingConfig (pump_fees PDA ["sharing-config", mint]): admin, status, shareholders[] with
+ * share_bps / share_pct, is_admin (normally the coin creator), is_social_pda (fees earmarked for a
+ * platform identity — social.platform 2 = X, social.user_id = the platform-native NUMERIC id, not the
+ * handle; lifetime_claimed_*), per-recipient received_* / payout_count; redirected_bps (share going
+ * to non-admin addresses), social_bps, is_default:true = 100% to the creator (a real answer, not "no
+ * data"); source "stream" (our table — only non-default configs are stored) or "chain" (live PDA
+ * read; config null + config_error only if every RPC endpoint failed). Plus quote {symbol, decimals,
+ * sol_usd}, distributions {count, total_*, last_at, recipients[], past_recipients[] (no longer in the
+ * split), payouts_considered, payouts_truncated}, history[] (config created / updated / reset,
+ * creator transferred — newest first), recent_distributions[]. Amounts are quote base units (SOL
+ * lamports unless a stable-quoted coin) as digit STRINGS. EVENT HISTORY STARTS 2026-08-17.
+ * PRO/ULTRA only, keyed API only.
+ */
+export async function tokenFeeShares(agent: Agent, params: { mint: string }) {
+  return restQuery(agent, "GET", `/tokens/${encodeURIComponent(params.mint)}/fee-shares`);
+}
+
+/**
+ * pump.fun fee-event feed (GET /tokens/fee-claims), newest first, across all coins: type =
+ * distribution (creator fees paid pro-rata to the SharingConfig shareholders — fees redirected to
+ * others — with payouts[] {address, share_bps, amount_raw, amount, amount_usd}) | social_claim (fees
+ * for a platform identity — platform 2 = X — claimed to a recipient wallet; mint NULL) |
+ * shares_created / shares_updated / shares_reset (config changes, shareholders[]) |
+ * creator_transferred (recipient = new creator) | creator_claim (plain creator vault claim — per
+ * creator, NO mint; EXCLUDED unless requested via type). Each event: id, type, at, tx_signature,
+ * slot, mint, admin, actor (signer), recipient, amount_raw (quote base units as a digit STRING),
+ * amount, amount_usd, quote, social {platform, platform_label, user_id, pda}, shareholders, payouts,
+ * payload (full decoded Anchor event). Default 100%-to-creator configs and zero-amount distributions
+ * are not stored. Poll with since (cursor pagination.next_since) or subscribe to WS channel
+ * `token:fee_claims` (event `token:fee_claim`). Filters type (comma list), mint, recipient, actor,
+ * social_platform, social_user_id, min_sol. HISTORY STARTS 2026-08-17. PRO/ULTRA only, keyed API only.
+ */
+export async function tokenFeeClaims(agent: Agent, params: TokenFeeClaimsParams = {}) {
+  const query = toQuery(params as unknown as Record<string, unknown>);
+  return restQuery(agent, "GET", `/tokens/fee-claims${query}`);
+}
+
 /** Historical OHLCV candles (1m/5m/15m/1h/4h/1d) aggregated from the trade firehose. PRO=OHLCV 30d; ULTRA=+net flow, liquidity delta, full history. PRO/ULTRA only. */
 export async function tokenCandles(agent: Agent, params: { mint: string; tf?: string; limit?: number; from?: string; to?: string }) {
   const qs = new URLSearchParams();
