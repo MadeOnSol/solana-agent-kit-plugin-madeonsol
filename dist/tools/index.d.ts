@@ -168,7 +168,18 @@ export declare function deleteWebhook(agent: Agent, params: {
 export declare function testWebhook(agent: Agent, params: {
     webhook_id: number;
 }): Promise<any>;
-export declare function getStreamToken(agent: Agent): Promise<any>;
+/**
+ * Issue your WebSocket streaming token. Stream tokens never expire (since
+ * 2026-08-27): every call returns the same token until your subscription lapses
+ * or you pass `{ rotate: true }`, which replaces it (the previous value keeps
+ * working for 60 s). `expires_at` / `next_refresh_at` are always `null`; the
+ * response also carries `rotated` (boolean) and `lifetime` (string). A `4001`
+ * close means "mint again", never a timer. Authenticate the handshake with
+ * `Authorization: Bearer <token>`.
+ */
+export declare function getStreamToken(agent: Agent, params?: {
+    rotate?: boolean;
+}): Promise<any>;
 /**
  * List your live WebSocket streaming sessions across ws-streaming and dex-stream.
  * Returns `{ sessions, count }`; each session has `id`, `service`, `tier`, `channels[]`,
