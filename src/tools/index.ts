@@ -742,6 +742,65 @@ export async function tokenFeeClaims(agent: Agent, params: TokenFeeClaimsParams 
   return restQuery(agent, "GET", `/tokens/fee-claims${query}`);
 }
 
+
+// ── Token surges & revivals (token momentum fires; PRO+, keyed API only — no x402 route) ──
+
+export interface TokenSurgesParams {
+  /** surge = token < 30 min old running vs its launch MC; revival = dormant ≥ 24 h then confirmed buys. */
+  kind?: "surge" | "revival";
+  /** Surge only — 400 with kind=revival. */
+  tier?: "early" | "strong" | "breakout";
+  mint?: string;
+  /** ISO 8601 — only fires after this instant (pagination.next_since). */
+  since?: string;
+  /** ISO 8601 — page back (pagination.next_before). */
+  before?: string;
+  min_mc_usd?: number;
+  max_mc_usd?: number;
+  /** Tape buys at fire time ≥. */
+  min_buys?: number;
+  /** Venue at birth: pumpfun | launchlab | bags | … */
+  launchpad?: string;
+  deployer_tier?: "elite" | "good" | "moderate" | "rising" | "cold" | "unranked";
+  /** Comma list — rows carrying ANY of these flags are dropped (unknown flag → 400 + known_flags). */
+  exclude_flags?: string;
+  /** "1" = only rows with no risk flags at all. */
+  only_clean?: "1" | "0" | "true" | "false" | boolean;
+  /** "1" = include per-(kind, tier) hit-rates over `days`. */
+  stats?: "1" | "0" | "true" | "false" | boolean;
+  /** 1–30, default 7. */
+  days?: number;
+  /** 1–200, default 50. */
+  limit?: number;
+}
+
+/**
+ * Token surges & revivals (GET /tokens/surges) — token momentum fires, newest first, across all
+ * mints. kind=surge: a token < 30 min old whose market cap runs hard vs its LAUNCH MC — tier early
+ * (≤10 min, ≥$12k, ≥3× launch) | strong (≤30 min, ≥$30k, ≥6× launch AND ≥2× the 3-min low — climbing
+ * NOW) | breakout (≤2 min, ≥$45k, ≥8×); each tier fires once per mint and must be SUSTAINED ≥10 s
+ * (nothing fires before 20 s of age — a one-tick bundle mark is a spike, not a surge). kind=revival:
+ * no 1-minute trade candle for ≥24 h, then confirmed ONLY by the tape (≥5 buys, ≥$500 buy volume,
+ * MC ≥1.5× the pre-dormancy close) — never by a price mark; tier null. Hard gates on both: liquidity
+ * ≥$1.5k and ≥2% of MC, MC ≤$100B, and the MC gained must be PAID FOR by buy volume on the tape.
+ * Each row: tape {source candles|wallet_trades, available, buys, sells, volume, unique_buyers — null
+ * outside token_trades coverage (wallet_data_available), never an inferred zero}, kol {buyers, names},
+ * early_buyers {bundled, sold, sniper_wallets}, deployer {tier, bonding_rate, runner_rate…},
+ * risk_flags[] (bundled_launch, few_buyers, wash_pattern, thin_liquidity, cold_deployer,
+ * sniper_heavy, early_buyers_exiting, sell_pressure, no_tape_trades, no_prior_price,
+ * mint_authority_active, transfer_fee — EMPTY = no flag raised, NOT verified clean) and outcome
+ * {mc_1h_multiple, peak_1h_multiple, priced_after_1h} once ≥65 min old. stats="1" adds per-(kind,
+ * tier) hit-rates over `days` (up_1h_pct, median_peak_multiple, doubled_1h_pct) — out-of-sample by
+ * construction. Filters are DB-native: kind, tier, mint, launchpad, deployer_tier, min_mc_usd /
+ * max_mc_usd, min_buys, exclude_flags (comma list), only_clean; cursors since / before. The response
+ * echoes the live thresholds in `definitions`. Pushed live on WS channel `token:surges` (events
+ * `token:surge` / `token:revival`) and accepted by createWebhook as those events. Retention 60 d.
+ * PRO/ULTRA only, keyed API only.
+ */
+export async function tokenSurges(agent: Agent, params: TokenSurgesParams = {}) {
+  const query = toQuery(params as unknown as Record<string, unknown>);
+  return restQuery(agent, "GET", `/tokens/surges${query}`);
+}
 /** Historical OHLCV candles (1m/5m/15m/1h/4h/1d) aggregated from the trade firehose. PRO=OHLCV 30d; ULTRA=+net flow, liquidity delta, full history. PRO/ULTRA only. */
 export async function tokenCandles(agent: Agent, params: { mint: string; tf?: string; limit?: number; from?: string; to?: string }) {
   const qs = new URLSearchParams();

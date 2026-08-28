@@ -539,6 +539,33 @@ export async function tokenFeeClaims(agent, params = {}) {
     const query = toQuery(params);
     return restQuery(agent, "GET", `/tokens/fee-claims${query}`);
 }
+/**
+ * Token surges & revivals (GET /tokens/surges) — token momentum fires, newest first, across all
+ * mints. kind=surge: a token < 30 min old whose market cap runs hard vs its LAUNCH MC — tier early
+ * (≤10 min, ≥$12k, ≥3× launch) | strong (≤30 min, ≥$30k, ≥6× launch AND ≥2× the 3-min low — climbing
+ * NOW) | breakout (≤2 min, ≥$45k, ≥8×); each tier fires once per mint and must be SUSTAINED ≥10 s
+ * (nothing fires before 20 s of age — a one-tick bundle mark is a spike, not a surge). kind=revival:
+ * no 1-minute trade candle for ≥24 h, then confirmed ONLY by the tape (≥5 buys, ≥$500 buy volume,
+ * MC ≥1.5× the pre-dormancy close) — never by a price mark; tier null. Hard gates on both: liquidity
+ * ≥$1.5k and ≥2% of MC, MC ≤$100B, and the MC gained must be PAID FOR by buy volume on the tape.
+ * Each row: tape {source candles|wallet_trades, available, buys, sells, volume, unique_buyers — null
+ * outside token_trades coverage (wallet_data_available), never an inferred zero}, kol {buyers, names},
+ * early_buyers {bundled, sold, sniper_wallets}, deployer {tier, bonding_rate, runner_rate…},
+ * risk_flags[] (bundled_launch, few_buyers, wash_pattern, thin_liquidity, cold_deployer,
+ * sniper_heavy, early_buyers_exiting, sell_pressure, no_tape_trades, no_prior_price,
+ * mint_authority_active, transfer_fee — EMPTY = no flag raised, NOT verified clean) and outcome
+ * {mc_1h_multiple, peak_1h_multiple, priced_after_1h} once ≥65 min old. stats="1" adds per-(kind,
+ * tier) hit-rates over `days` (up_1h_pct, median_peak_multiple, doubled_1h_pct) — out-of-sample by
+ * construction. Filters are DB-native: kind, tier, mint, launchpad, deployer_tier, min_mc_usd /
+ * max_mc_usd, min_buys, exclude_flags (comma list), only_clean; cursors since / before. The response
+ * echoes the live thresholds in `definitions`. Pushed live on WS channel `token:surges` (events
+ * `token:surge` / `token:revival`) and accepted by createWebhook as those events. Retention 60 d.
+ * PRO/ULTRA only, keyed API only.
+ */
+export async function tokenSurges(agent, params = {}) {
+    const query = toQuery(params);
+    return restQuery(agent, "GET", `/tokens/surges${query}`);
+}
 /** Historical OHLCV candles (1m/5m/15m/1h/4h/1d) aggregated from the trade firehose. PRO=OHLCV 30d; ULTRA=+net flow, liquidity delta, full history. PRO/ULTRA only. */
 export async function tokenCandles(agent, params) {
     const qs = new URLSearchParams();
