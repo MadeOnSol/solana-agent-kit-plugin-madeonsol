@@ -1,6 +1,6 @@
 {
   "name": "solana-agent-kit-plugin-madeonsol",
-  "version": "1.25.0",
+  "version": "1.25.1",
   "description": "Solana Agent Kit plugin for MadeOnSol — KOL intelligence and deployer analytics via x402 micropayments",
   "type": "module",
   "main": "dist/index.js",
@@ -12,6 +12,8 @@
   "scripts": {
     "prebuild": "node ../gen-version.mjs",
     "build": "tsc",
+    "typecheck": "tsc --noEmit",
+    "test": "npm run build && node test/smoke.mjs",
     "preflight": "bash ../../scripts/preflight-publish.sh",
     "prepublishOnly": "npm run preflight && npm run build"
   },
@@ -47,7 +49,7 @@
     "@x402/fetch": "^2.8.0",
     "@x402/core": "^2.8.0",
     "@x402/svm": "^2.8.0",
-    "@solana/kit": "^5.5.1",
+    "@solana/kit": ">=5.5.1 <9.0.0",
     "@scure/base": "^2.0.0"
   },
   "peerDependenciesMeta": {

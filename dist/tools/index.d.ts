@@ -110,6 +110,27 @@ export declare function deployerHistory(agent: Agent, params: {
     wallet: string;
     limit?: number;
 }): Promise<any>;
+/** A deployer's reputation exactly as it stood on `date` (default today, UTC) —
+ *  the latest write-on-change snapshot at or before it, so a backtest sees only
+ *  what was knowable then. `snapshot.snapshot_date` can predate `date`
+ *  (write-on-change); `snapshot.carried: true` marks that. No snapshot at or
+ *  before `date` returns `as_of: false, snapshot: null` — nothing is ever
+ *  synthesized. `date` must be >= 2026-04-07 and not in the future. */
+export declare function deployerAsOf(agent: Agent, params: {
+    wallet: string;
+    date?: string;
+}): Promise<any>;
+/** pump.fun creator-fee rewards for a wallet, answered two ways that are never
+ *  merged: `collected` (what actually reached the wallet — direct vault claims
+ *  kept 90 days, social-handle claims, shareholder payouts on any token) and
+ *  `attributed` (every payout on the tokens it deployed, split
+ *  `to_self`/`to_others` + `redirected_pct`). Every money field is
+ *  `{sol, usdc, usd}`; `usd` is `null` (never a silent 0) when a SOL amount
+ *  exists and no SOL price was available. Works for non-deployers too
+ *  (`is_deployer: false`, `attributed` empty). */
+export declare function deployerRewards(agent: Agent, params: {
+    wallet: string;
+}): Promise<any>;
 /** Chain-wide deployer stats — tracked count, bonds detected, bond rate, tier counts. */
 export declare function deployerStats(agent: Agent): Promise<any>;
 /**
