@@ -364,6 +364,12 @@ export async function deleteWebhook(agent: Agent, params: { id: number }) {
   return restQuery(agent, "DELETE", `/webhooks/${params.id}`);
 }
 
+/** Update a webhook's URL, subscribed events, or active state. Only passed fields change. Added 2026-09-10. */
+export async function updateWebhook(agent: Agent, params: { id: number; url?: string; events?: string[]; is_active?: boolean }) {
+  const { id, ...body } = params;
+  return restQuery(agent, "PATCH", `/webhooks/${id}`, body);
+}
+
 export async function testWebhook(agent: Agent, params: { webhook_id: number }) {
   return restQuery(agent, "POST", "/webhooks/test", params);
 }
@@ -410,6 +416,46 @@ export async function walletTrackerAdd(agent: Agent, params: { wallet_address: s
 
 export async function walletTrackerRemove(agent: Agent, params: { wallet_address: string }) {
   return restQuery(agent, "DELETE", `/wallet-tracker/watchlist/${encodeURIComponent(params.wallet_address)}`);
+}
+
+/** Rename (or clear, with null) the label on a wallet already in your watchlist. Added 2026-09-10. */
+export async function walletTrackerRelabel(agent: Agent, params: { wallet_address: string; label: string | null }) {
+  return restQuery(agent, "PATCH", `/wallet-tracker/watchlist/${encodeURIComponent(params.wallet_address)}`, { label: params.label });
+}
+
+// ── Sniper detection (added 2026-09-10 — pre-confirm deshred deploy feed) ──
+
+/** Deshred pre-confirm pump.fun deploy feed — new launches surface ~500ms before on-chain confirmation. */
+export async function sniperRecent(agent: Agent, params?: { deployer_tier?: string; min_bond_rate?: number; since?: string; watchlist?: boolean; limit?: number }) {
+  const qs = new URLSearchParams();
+  if (params) {
+    for (const [k, v] of Object.entries(params)) {
+      if (v !== undefined) qs.set(k, String(v));
+    }
+  }
+  const query = qs.toString();
+  return restQuery(agent, "GET", "/sniper/recent" + (query ? "?" + query : ""));
+}
+
+/** Deshred pre-confirm deploys filtered to one deployer wallet. ULTRA only. */
+export async function sniperByDeployer(agent: Agent, params: { wallet: string; limit?: number }) {
+  const qs = params.limit !== undefined ? `?limit=${params.limit}` : "";
+  return restQuery(agent, "GET", `/sniper/by-deployer/${encodeURIComponent(params.wallet)}${qs}`);
+}
+
+/** List your custom sniper watchlist (tracked deployer wallets, any tier). PRO+/ULTRA. */
+export async function sniperWatchlist(agent: Agent) {
+  return restQuery(agent, "GET", "/sniper/watchlist");
+}
+
+/** Add one or many deployer wallets to your sniper watchlist. PRO+/ULTRA. */
+export async function sniperWatchlistAdd(agent: Agent, params: { wallet?: string; wallets?: string[]; label?: string }) {
+  return restQuery(agent, "POST", "/sniper/watchlist", params);
+}
+
+/** Remove a deployer wallet from your sniper watchlist. PRO+/ULTRA. */
+export async function sniperWatchlistRemove(agent: Agent, params: { wallet: string }) {
+  return restQuery(agent, "DELETE", `/sniper/watchlist/${encodeURIComponent(params.wallet)}`);
 }
 
 export async function walletTrackerTrades(
@@ -842,6 +888,17 @@ export async function tokenCandles(agent: Agent, params: { mint: string; tf?: st
 export async function tokenFlow(agent: Agent, params: { mint: string; window?: "1h" | "24h" }) {
   const qs = params.window !== undefined ? `?window=${params.window}` : "";
   return restQuery(agent, "GET", `/tokens/${encodeURIComponent(params.mint)}/flow${qs}`);
+}
+
+/** The wallets that made (or lost) the most on a token, ranked by realized PnL or ROI. Added 2026-09-10. */
+export async function tokenTopTraders(agent: Agent, params: { mint: string; limit?: number; sort?: "pnl" | "roi"; window_days?: number; min_bought_sol?: number }) {
+  const qs = new URLSearchParams();
+  if (params.limit !== undefined) qs.set("limit", String(params.limit));
+  if (params.sort !== undefined) qs.set("sort", params.sort);
+  if (params.window_days !== undefined) qs.set("window_days", String(params.window_days));
+  if (params.min_bought_sol !== undefined) qs.set("min_bought_sol", String(params.min_bought_sol));
+  const query = qs.toString();
+  return restQuery(agent, "GET", `/tokens/${encodeURIComponent(params.mint)}/top-traders` + (query ? "?" + query : ""));
 }
 
 /**

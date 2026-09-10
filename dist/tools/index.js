@@ -269,6 +269,11 @@ export async function listWebhooks(agent) {
 export async function deleteWebhook(agent, params) {
     return restQuery(agent, "DELETE", `/webhooks/${params.id}`);
 }
+/** Update a webhook's URL, subscribed events, or active state. Only passed fields change. Added 2026-09-10. */
+export async function updateWebhook(agent, params) {
+    const { id, ...body } = params;
+    return restQuery(agent, "PATCH", `/webhooks/${id}`, body);
+}
 export async function testWebhook(agent, params) {
     return restQuery(agent, "POST", "/webhooks/test", params);
 }
@@ -308,6 +313,40 @@ export async function walletTrackerAdd(agent, params) {
 }
 export async function walletTrackerRemove(agent, params) {
     return restQuery(agent, "DELETE", `/wallet-tracker/watchlist/${encodeURIComponent(params.wallet_address)}`);
+}
+/** Rename (or clear, with null) the label on a wallet already in your watchlist. Added 2026-09-10. */
+export async function walletTrackerRelabel(agent, params) {
+    return restQuery(agent, "PATCH", `/wallet-tracker/watchlist/${encodeURIComponent(params.wallet_address)}`, { label: params.label });
+}
+// ── Sniper detection (added 2026-09-10 — pre-confirm deshred deploy feed) ──
+/** Deshred pre-confirm pump.fun deploy feed — new launches surface ~500ms before on-chain confirmation. */
+export async function sniperRecent(agent, params) {
+    const qs = new URLSearchParams();
+    if (params) {
+        for (const [k, v] of Object.entries(params)) {
+            if (v !== undefined)
+                qs.set(k, String(v));
+        }
+    }
+    const query = qs.toString();
+    return restQuery(agent, "GET", "/sniper/recent" + (query ? "?" + query : ""));
+}
+/** Deshred pre-confirm deploys filtered to one deployer wallet. ULTRA only. */
+export async function sniperByDeployer(agent, params) {
+    const qs = params.limit !== undefined ? `?limit=${params.limit}` : "";
+    return restQuery(agent, "GET", `/sniper/by-deployer/${encodeURIComponent(params.wallet)}${qs}`);
+}
+/** List your custom sniper watchlist (tracked deployer wallets, any tier). PRO+/ULTRA. */
+export async function sniperWatchlist(agent) {
+    return restQuery(agent, "GET", "/sniper/watchlist");
+}
+/** Add one or many deployer wallets to your sniper watchlist. PRO+/ULTRA. */
+export async function sniperWatchlistAdd(agent, params) {
+    return restQuery(agent, "POST", "/sniper/watchlist", params);
+}
+/** Remove a deployer wallet from your sniper watchlist. PRO+/ULTRA. */
+export async function sniperWatchlistRemove(agent, params) {
+    return restQuery(agent, "DELETE", `/sniper/watchlist/${encodeURIComponent(params.wallet)}`);
 }
 export async function walletTrackerTrades(agent, params = {}) {
     const qs = new URLSearchParams();
@@ -608,6 +647,20 @@ export async function tokenCandles(agent, params) {
 export async function tokenFlow(agent, params) {
     const qs = params.window !== undefined ? `?window=${params.window}` : "";
     return restQuery(agent, "GET", `/tokens/${encodeURIComponent(params.mint)}/flow${qs}`);
+}
+/** The wallets that made (or lost) the most on a token, ranked by realized PnL or ROI. Added 2026-09-10. */
+export async function tokenTopTraders(agent, params) {
+    const qs = new URLSearchParams();
+    if (params.limit !== undefined)
+        qs.set("limit", String(params.limit));
+    if (params.sort !== undefined)
+        qs.set("sort", params.sort);
+    if (params.window_days !== undefined)
+        qs.set("window_days", String(params.window_days));
+    if (params.min_bought_sol !== undefined)
+        qs.set("min_bought_sol", String(params.min_bought_sol));
+    const query = qs.toString();
+    return restQuery(agent, "GET", `/tokens/${encodeURIComponent(params.mint)}/top-traders` + (query ? "?" + query : ""));
 }
 /**
  * Mint-scoped trade tape — every captured trade for a token, cursor-paginated newest first

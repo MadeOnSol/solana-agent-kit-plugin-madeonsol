@@ -57,8 +57,8 @@ export declare const tokenSurgesAction: {
         mint?: string | undefined;
         tier?: "early" | "strong" | "breakout" | undefined;
         since?: string | undefined;
-        before?: string | undefined;
         deployer_tier?: "elite" | "good" | "moderate" | "rising" | "cold" | "unranked" | undefined;
+        before?: string | undefined;
         kind?: "surge" | "revival" | undefined;
         stats?: "true" | "false" | "1" | "0" | undefined;
         exclude_flags?: string | undefined;
@@ -73,8 +73,8 @@ export declare const tokenSurgesAction: {
         mint?: string | undefined;
         tier?: "early" | "strong" | "breakout" | undefined;
         since?: string | undefined;
-        before?: string | undefined;
         deployer_tier?: "elite" | "good" | "moderate" | "rising" | "cold" | "unranked" | undefined;
+        before?: string | undefined;
         kind?: "surge" | "revival" | undefined;
         stats?: "true" | "false" | "1" | "0" | undefined;
         exclude_flags?: string | undefined;

@@ -21,6 +21,43 @@ export declare const walletTrackerWatchlistAction: {
         result?: undefined;
     }>;
 };
+export declare const walletTrackerRelabelAction: {
+    name: string;
+    similes: string[];
+    description: string;
+    examples: {
+        input: {
+            wallet_address: string;
+            label: string;
+        };
+        output: {
+            status: string;
+        };
+        explanation: string;
+    }[][];
+    schema: z.ZodObject<{
+        wallet_address: z.ZodString;
+        label: z.ZodNullable<z.ZodString>;
+    }, "strip", z.ZodTypeAny, {
+        wallet_address: string;
+        label: string | null;
+    }, {
+        wallet_address: string;
+        label: string | null;
+    }>;
+    handler: (agent: unknown, input: {
+        wallet_address: string;
+        label: string | null;
+    }) => Promise<{
+        status: string;
+        result: any;
+        message?: undefined;
+    } | {
+        status: string;
+        message: string;
+        result?: undefined;
+    }>;
+};
 export declare const walletTrackerAddAction: {
     name: string;
     similes: string[];

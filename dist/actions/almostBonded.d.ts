@@ -29,9 +29,9 @@ export declare const almostBondedAction: {
     }, "strip", z.ZodTypeAny, {
         limit: number;
         sort?: "velocity_desc" | "progress_desc" | "eta_asc" | undefined;
+        deployer_tier?: "elite" | "good" | "moderate" | "rising" | "cold" | "unranked" | undefined;
         min_liq?: number | undefined;
         authority_revoked?: boolean | undefined;
-        deployer_tier?: "elite" | "good" | "moderate" | "rising" | "cold" | "unranked" | undefined;
         min_progress?: number | undefined;
         max_progress?: number | undefined;
         min_velocity_pct_per_min?: number | undefined;
@@ -39,9 +39,9 @@ export declare const almostBondedAction: {
     }, {
         sort?: "velocity_desc" | "progress_desc" | "eta_asc" | undefined;
         limit?: number | undefined;
+        deployer_tier?: "elite" | "good" | "moderate" | "rising" | "cold" | "unranked" | undefined;
         min_liq?: number | undefined;
         authority_revoked?: boolean | undefined;
-        deployer_tier?: "elite" | "good" | "moderate" | "rising" | "cold" | "unranked" | undefined;
         min_progress?: number | undefined;
         max_progress?: number | undefined;
         min_velocity_pct_per_min?: number | undefined;

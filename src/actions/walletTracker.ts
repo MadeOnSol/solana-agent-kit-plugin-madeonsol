@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { walletTrackerWatchlist, walletTrackerAdd, walletTrackerRemove, walletTrackerTrades, walletTrackerSummary } from "../tools/index.js";
+import { walletTrackerWatchlist, walletTrackerAdd, walletTrackerRemove, walletTrackerRelabel, walletTrackerTrades, walletTrackerSummary } from "../tools/index.js";
 
 export const walletTrackerWatchlistAction = {
   name: "MADEONSOL_WALLET_TRACKER_WATCHLIST_ACTION",
@@ -12,6 +12,27 @@ export const walletTrackerWatchlistAction = {
   handler: async (agent: unknown) => {
     try {
       const data = await walletTrackerWatchlist(agent);
+      return { status: "success", result: data };
+    } catch (err) {
+      return { status: "error", message: (err as Error).message };
+    }
+  },
+};
+
+export const walletTrackerRelabelAction = {
+  name: "MADEONSOL_WALLET_TRACKER_RELABEL_ACTION",
+  similes: ["rename watchlist wallet", "relabel wallet", "update wallet label"],
+  description: "Rename (or clear) the label on a wallet already in your MadeOnSol watchlist. Added 2026-09-10.",
+  examples: [
+    [{ input: { wallet_address: "ABC...xyz", label: "whale #2" }, output: { status: "success" }, explanation: "Rename a tracked wallet's label" }],
+  ],
+  schema: z.object({
+    wallet_address: z.string().describe("Solana wallet address (base58) already on your watchlist"),
+    label: z.string().nullable().describe("New label, or null to clear it"),
+  }),
+  handler: async (agent: unknown, input: { wallet_address: string; label: string | null }) => {
+    try {
+      const data = await walletTrackerRelabel(agent, input);
       return { status: "success", result: data };
     } catch (err) {
       return { status: "error", message: (err as Error).message };

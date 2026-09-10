@@ -186,6 +186,13 @@ export declare function listWebhooks(agent: Agent): Promise<any>;
 export declare function deleteWebhook(agent: Agent, params: {
     id: number;
 }): Promise<any>;
+/** Update a webhook's URL, subscribed events, or active state. Only passed fields change. Added 2026-09-10. */
+export declare function updateWebhook(agent: Agent, params: {
+    id: number;
+    url?: string;
+    events?: string[];
+    is_active?: boolean;
+}): Promise<any>;
 export declare function testWebhook(agent: Agent, params: {
     webhook_id: number;
 }): Promise<any>;
@@ -221,6 +228,36 @@ export declare function walletTrackerAdd(agent: Agent, params: {
 }): Promise<any>;
 export declare function walletTrackerRemove(agent: Agent, params: {
     wallet_address: string;
+}): Promise<any>;
+/** Rename (or clear, with null) the label on a wallet already in your watchlist. Added 2026-09-10. */
+export declare function walletTrackerRelabel(agent: Agent, params: {
+    wallet_address: string;
+    label: string | null;
+}): Promise<any>;
+/** Deshred pre-confirm pump.fun deploy feed — new launches surface ~500ms before on-chain confirmation. */
+export declare function sniperRecent(agent: Agent, params?: {
+    deployer_tier?: string;
+    min_bond_rate?: number;
+    since?: string;
+    watchlist?: boolean;
+    limit?: number;
+}): Promise<any>;
+/** Deshred pre-confirm deploys filtered to one deployer wallet. ULTRA only. */
+export declare function sniperByDeployer(agent: Agent, params: {
+    wallet: string;
+    limit?: number;
+}): Promise<any>;
+/** List your custom sniper watchlist (tracked deployer wallets, any tier). PRO+/ULTRA. */
+export declare function sniperWatchlist(agent: Agent): Promise<any>;
+/** Add one or many deployer wallets to your sniper watchlist. PRO+/ULTRA. */
+export declare function sniperWatchlistAdd(agent: Agent, params: {
+    wallet?: string;
+    wallets?: string[];
+    label?: string;
+}): Promise<any>;
+/** Remove a deployer wallet from your sniper watchlist. PRO+/ULTRA. */
+export declare function sniperWatchlistRemove(agent: Agent, params: {
+    wallet: string;
 }): Promise<any>;
 export declare function walletTrackerTrades(agent: Agent, params?: {
     wallet?: string;
@@ -551,6 +588,14 @@ export declare function tokenCandles(agent: Agent, params: {
 export declare function tokenFlow(agent: Agent, params: {
     mint: string;
     window?: "1h" | "24h";
+}): Promise<any>;
+/** The wallets that made (or lost) the most on a token, ranked by realized PnL or ROI. Added 2026-09-10. */
+export declare function tokenTopTraders(agent: Agent, params: {
+    mint: string;
+    limit?: number;
+    sort?: "pnl" | "roi";
+    window_days?: number;
+    min_bought_sol?: number;
 }): Promise<any>;
 /**
  * Mint-scoped trade tape — every captured trade for a token, cursor-paginated newest first
