@@ -8,9 +8,9 @@
  */
 import { VERSION } from "../version.js";
 const BASE_URL = "https://madeonsol.com";
-let _authMode = null;
-let _authHeaders = {};
-let _paidFetch = null;
+// Cache by agent identity, never by process. A request retains its own context
+// even if another agent initializes or this agent rotates credentials mid-call.
+const authByAgent = new WeakMap();
 /** Most recent rate-limit headers, populated by every successful API request. */
 export let lastRateLimit = {};
 function captureRateLimit(res) {
@@ -24,16 +24,32 @@ function captureRateLimit(res) {
 function getConfig(agent, key) {
     return agent.config?.[key] || agent.config?.OTHER_API_KEYS?.[key];
 }
-export async function initAuth(agent) {
-    if (_authMode)
-        return;
+function getAuth(agent) {
     const apiKey = getConfig(agent, "MADEONSOL_API_KEY");
-    const privateKey = getConfig(agent, "SVM_PRIVATE_KEY");
+    // A configured API key always wins; do not retain an unused private key.
+    const privateKey = apiKey ? undefined : getConfig(agent, "SVM_PRIVATE_KEY");
+    const cached = authByAgent.get(agent);
+    if (cached && cached.apiKey === apiKey && cached.privateKey === privateKey) {
+        return cached.context;
+    }
+    const entry = { apiKey, privateKey, context: createAuth(apiKey, privateKey) };
+    authByAgent.set(agent, entry);
+    // Share pending initialization, but allow a failed setup to be retried. An
+    // older failure must not evict credentials installed by a newer request.
+    void entry.context.catch(() => {
+        if (authByAgent.get(agent) === entry)
+            authByAgent.delete(agent);
+    });
+    return entry.context;
+}
+async function createAuth(apiKey, privateKey) {
     if (apiKey) {
-        _authMode = "madeonsol";
-        _authHeaders = { Authorization: `Bearer ${apiKey}`, "User-Agent": `solana-agent-kit-plugin-madeonsol/${VERSION}` };
-        _paidFetch = fetch;
         console.log("[madeonsol] Using MadeOnSol API key (Bearer auth)");
+        return {
+            mode: "madeonsol",
+            headers: { Authorization: `Bearer ${apiKey}`, "User-Agent": `solana-agent-kit-plugin-madeonsol/${VERSION}` },
+            paidFetch: fetch,
+        };
     }
     else if (privateKey) {
         const { wrapFetchWithPayment } = await import("@x402/fetch");
@@ -44,25 +60,26 @@ export async function initAuth(agent) {
         const signer = await createKeyPairSignerFromBytes(base58.decode(privateKey));
         const client = new x402Client();
         client.register("solana:*", new ExactSvmScheme(signer));
-        _paidFetch = wrapFetchWithPayment(fetch, client);
-        _authMode = "x402";
         console.log(`[madeonsol] x402 payments enabled, wallet: ${signer.address}`);
+        return { mode: "x402", headers: {}, paidFetch: wrapFetchWithPayment(fetch, client) };
     }
     else {
-        _authMode = "none";
-        _paidFetch = fetch;
         console.warn("\n[madeonsol] No auth configured — every API call will fail.\n" +
             "  → Get a free MADEONSOL_API_KEY (200 req/day, no card) at https://madeonsol.com/pricing\n" +
             "  → Or set SVM_PRIVATE_KEY for x402 micropayments.\n");
+        return { mode: "none", headers: {}, paidFetch: fetch };
     }
+}
+export async function initAuth(agent) {
+    await getAuth(agent);
 }
 /** @deprecated Use initAuth instead */
 export async function initPaidFetch(agent) {
-    await initAuth(agent);
-    return _paidFetch;
+    return (await getAuth(agent)).paidFetch;
 }
-async function query(path, params) {
-    const apiPath = _authMode === "x402" || _authMode === "none"
+async function query(agent, path, params) {
+    const auth = await getAuth(agent);
+    const apiPath = auth.mode === "x402" || auth.mode === "none"
         ? path
         : path.replace("/api/x402/", "/api/v1/");
     const url = new URL(apiPath, BASE_URL);
@@ -72,9 +89,9 @@ async function query(path, params) {
                 url.searchParams.set(k, String(v));
         }
     }
-    const res = _authMode === "x402"
-        ? await _paidFetch(url.toString())
-        : await fetch(url.toString(), { headers: _authHeaders });
+    const res = auth.mode === "x402"
+        ? await auth.paidFetch(url.toString())
+        : await fetch(url.toString(), { headers: auth.headers });
     captureRateLimit(res);
     if (!res.ok) {
         const body = await res.text().catch(() => "");
@@ -83,20 +100,17 @@ async function query(path, params) {
     return res.json();
 }
 export async function kolFeed(agent, params = {}) {
-    await initAuth(agent);
-    return query("/api/x402/kol/feed", params);
+    return query(agent, "/api/x402/kol/feed", params);
 }
 export async function kolCoordination(agent, params = {}) {
-    await initAuth(agent);
     const { include_majors, ...rest } = params;
     const flat = { ...rest };
     if (include_majors !== undefined)
         flat.include_majors = include_majors ? "true" : "false";
-    return query("/api/x402/kol/coordination", flat);
+    return query(agent, "/api/x402/kol/coordination", flat);
 }
 export async function kolLeaderboard(agent, params = {}) {
-    await initAuth(agent);
-    return query("/api/x402/kol/leaderboard", params);
+    return query(agent, "/api/x402/kol/leaderboard", params);
 }
 /**
  * Get Pump.fun deployer alerts with KOL buy enrichment.
@@ -104,37 +118,30 @@ export async function kolLeaderboard(agent, params = {}) {
  * BASIC callers passing it receive HTTP 403.
  */
 export async function deployerAlerts(agent, params = {}) {
-    await initAuth(agent);
-    return query("/api/x402/deployer-hunter/alerts", params);
+    return query(agent, "/api/x402/deployer-hunter/alerts", params);
 }
 export async function kolPairs(agent, params = {}) {
-    await initAuth(agent);
-    return query("/api/x402/kol/pairs", params);
+    return query(agent, "/api/x402/kol/pairs", params);
 }
 export async function kolHotTokens(agent, params = {}) {
-    await initAuth(agent);
-    return query("/api/x402/kol/tokens/hot", params);
+    return query(agent, "/api/x402/kol/tokens/hot", params);
 }
 export async function kolTrendingTokens(agent, params = {}) {
-    await initAuth(agent);
-    return query("/api/x402/kol/tokens/trending", params);
+    return query(agent, "/api/x402/kol/tokens/trending", params);
 }
 export async function kolTokenEntryOrder(agent, params) {
-    await initAuth(agent);
     const { mint, ...rest } = params;
-    return query(`/api/x402/kol/tokens/${encodeURIComponent(mint)}/entry-order`, rest);
+    return query(agent, `/api/x402/kol/tokens/${encodeURIComponent(mint)}/entry-order`, rest);
 }
 export async function kolCompare(agent, params) {
-    await initAuth(agent);
-    return query("/api/x402/kol/compare", { wallets: params.wallets.join(",") });
+    return query(agent, "/api/x402/kol/compare", { wallets: params.wallets.join(",") });
 }
 export async function kolAlertsRecent(agent, params = {}) {
-    await initAuth(agent);
     const { types, ...rest } = params;
     const flat = { ...rest };
     if (types && types.length > 0)
         flat.types = types.join(",");
-    return query("/api/x402/kol/alerts/recent", flat);
+    return query(agent, "/api/x402/kol/alerts/recent", flat);
 }
 export async function kolPnl(agent, params) {
     const qs = params.period ? `?period=${params.period}` : "";
@@ -241,15 +248,15 @@ export async function deployerRecentBonds(agent, params) {
 }
 // ── REST helper (webhooks, streaming, alpha, copy-trade, wallet-tracker) ──
 async function restQuery(agent, method, path, body) {
-    await initAuth(agent);
-    if (_authMode !== "madeonsol") {
+    const auth = await getAuth(agent);
+    if (auth.mode !== "madeonsol") {
         throw new Error("MadeOnSol API key required for this endpoint. Get a free `msk_` key at madeonsol.com/pricing");
     }
     const res = await fetch(`${BASE_URL}/api/v1${path}`, {
         method,
         headers: {
             "Content-Type": "application/json",
-            ..._authHeaders,
+            ...auth.headers,
         },
         ...(body ? { body: JSON.stringify(body) } : {}),
     });
