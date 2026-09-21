@@ -13,6 +13,8 @@
 
 > Real-time Solana trading intelligence: track 2,000+ KOL wallets with <3s latency on paid keys and x402 pay-per-call (free-tier live feeds are 5-min delayed), score 85K+ Pump.fun deployers, verify any wallet's CURRENT on-chain holdings straight from its token accounts, surface deshred deploy signals ~500ms before on-chain confirmation, detect multi-KOL coordination, and stream every DEX trade. Free tier: 200 requests/day across 40+ endpoints (live feeds 5-min delayed) — no signup payment. Get a key at [madeonsol.com/pricing](https://madeonsol.com/pricing).
 
+> **New in 2.0.0 — BREAKING for keyless (x402) mode only: an explicit payment policy is required (security fix, SDK-01).** Configure `X402_PAY_TO`, `X402_FEE_PAYER`, `X402_MAX_AMOUNT_ATOMIC`, `X402_MAX_TOTAL_AMOUNT_ATOMIC` and `SVM_RPC_URL` in the agent config (see the keyless section); `getAuthorizedPaymentAmount()` reports the budget used. Before, keyless mode signed whatever Solana USDC amount, recipient and fee payer a 402 challenge asked for. Now every challenge is checked BEFORE signing against a trusted merchant `payTo`, a trusted facilitator `feePayer` (which must differ from your wallet), the USDC mint, `solana:5eykt…` mainnet, the `exact` scheme, a per-call cap and a lifetime cap. Use the canonical values in the keyless section below; caps must be at least `20000` (0.02 USDC) per call to reach every endpoint. The budget is per client instance / process: not wallet-wide, not shared between processes, reset on a new instance or restart. Keyless requires the base URL exactly `https://madeonsol.com`. **API-key (`msk_`) users: no change, no new config.**
+
 > **New in 1.26.1 — credentials are isolated per agent (security fix, SEC-03).** Fixed: this plugin used to cache the resolved API key / wallet signer at module scope, so if a process ran more than one agent instance, a second `initAuth()` call could silently overwrite or borrow the first agent's credentials — including mid-flight, during concurrent calls. Auth is now cached per agent object; credential rotation, concurrent initialization, and a failed setup on one agent are all race-safe and cannot leak into or clobber another agent's session. No public API change — `initAuth()` / `initPaidFetch()` keep their existing signatures and behavior for single-agent use. Only affects processes that run multiple `SolanaAgentKit` instances with different credentials side by side.
 >
 > **New in 1.26.0 — top traders, sniper detection, and two update tools.** Found by an internal agentic-infra coverage audit; also fixes a real bug from 1.25.0 where `deployerAsOf`/`deployerRewards` were registered as actions but never wired into `agent.methods` or the package's exports. `agent.methods.tokenTopTraders(mint, params?)` / `MADEONSOL_TOKEN_TOP_TRADERS_ACTION` ranks a token's wallets by realized PnL or ROI. `sniperRecent` / `sniperByDeployer` / `sniperWatchlist` / `sniperWatchlistAdd` / `sniperWatchlistRemove` bring the deshred pre-confirm deploy feed to this plugin for the first time. `updateWebhook(id, params)` and `walletTrackerRelabel(address, label)` (both PATCH) round out the CRUD surface.
@@ -74,6 +76,48 @@ const agent = new SolanaAgentKit(privateKey, rpcUrl, { MADEONSOL_API_KEY: "msk_.
 agent.use(MadeOnSolPlugin);
 const trades = await agent.methods.kolFeed(agent, { limit: 5, action: "buy" });
 ```
+
+## Required payment policy (breaking keyless upgrade)
+
+Keyless Solana payments require an explicit trusted merchant, facilitator and authorization budget. API-key mode is unchanged and takes precedence over a configured wallet.
+
+Only exact payments in mainnet USDC are permitted. Set the two addresses from your trusted operator configuration, independently of a server challenge. `SVM_RPC_URL` must be your trusted HTTPS RPC; there is no public RPC fallback. The agent wallet cannot also be the facilitator fee payer.
+
+| Setting | Meaning |
+|---|---|
+| `X402_PAY_TO` | Trusted merchant wallet receiving USDC |
+| `X402_FEE_PAYER` | Trusted facilitator wallet paying transaction fees |
+| `X402_MAX_AMOUNT_ATOMIC` | Maximum per payment, as a positive integer string |
+| `X402_MAX_TOTAL_AMOUNT_ATOMIC` | Lifetime authorization allowance, as a positive integer string |
+| `SVM_RPC_URL` | Explicit trusted HTTPS Solana RPC URL |
+
+USDC uses 6 decimals: `20000` = 0.02 USDC and `1000000` = 1 USDC. Choose limits that cover the endpoints you intend to use; these examples are not a price guarantee.
+
+**Canonical MadeOnSol values (Solana mainnet USDC).** Pinned here (GitHub + npm README) so you do not have to take them from a 402:
+- merchant `payTo` / `X402_PAY_TO`: `GLu63pRCYrp4BJu5P5ciYKxgeZFW9c8TJ8jWzK3TB9AR` (also shown on https://madeonsol.com/x402 and https://madeonsol.com/.well-known/x402)
+- facilitator `feePayer` / `X402_FEE_PAYER`: `2wKupLR9q6wXYppw8Gr2NvWxKBUqm4PPJKkQfoxHDBg4`. This is the fee payer of **PayAI**, the third-party facilitator MadeOnSol's Solana rail uses. If PayAI rotates it, keyless calls fail closed (the client refuses to sign) until you update this value; a MadeOnSol release will announce the new one.
+- prices: Solana legs are 5000–20000 atomic (0.005–0.02 USDC), so `maxAmountAtomic` / `X402_MAX_AMOUNT_ATOMIC` must be at least `20000` to reach every endpoint.
+
+The budget is per client instance / process: not wallet-wide, not shared between processes, reset when a new instance or process starts. Keyless mode requires the base URL exactly `https://madeonsol.com`.
+
+
+The allowance is reserved before concurrent calls can approve/sign. An unsigned denial releases it; entering payment creation retains it even if RPC, signing or the paid response fails. It measures **authorized attempts, not settled spend**. There is no automatic refund or payment replay. A timeout cannot undo a proof already sent.
+
+Set all five settings alongside `SVM_PRIVATE_KEY` in `agent.config` or `agent.config.OTHER_API_KEYS`. They are operator configuration, not tool arguments. For example:
+
+```ts
+const paymentConfig = {
+  SVM_PRIVATE_KEY: process.env.SVM_PRIVATE_KEY!,
+  X402_PAY_TO: "GLu63pRCYrp4BJu5P5ciYKxgeZFW9c8TJ8jWzK3TB9AR",
+  X402_FEE_PAYER: "2wKupLR9q6wXYppw8Gr2NvWxKBUqm4PPJKkQfoxHDBg4",
+  X402_MAX_AMOUNT_ATOMIC: "20000",
+  X402_MAX_TOTAL_AMOUNT_ATOMIC: "1000000",
+  SVM_RPC_URL: process.env.SVM_RPC_URL!,
+};
+// Include paymentConfig in your agent's configuration, then use the plugin.
+```
+
+The allowance is per agent object and survives credential rotation, auth-mode changes and failed initialization. Changing its policy fails closed; deliberately create a new agent to establish a new allowance. Reuse a long-lived agent. `getAuthorizedPaymentAmount(agent)` reports atomic authorized attempts. Separate agents/processes sharing a wallet need an external shared budget.
 
 ## Authentication
 
@@ -370,3 +414,4 @@ Free tier returns the full REST response shape on 40+ endpoints — real wallets
 ## License
 
 MIT
+

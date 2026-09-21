@@ -7,6 +7,7 @@
  * Get a free `msk_` key at https://madeonsol.com/pricing.
  */
 type Agent = any;
+export declare function getAuthorizedPaymentAmount(agent: Agent): string;
 export interface RateLimitInfo {
     limit?: string;
     remaining?: string;

@@ -49,7 +49,7 @@ export declare const tokenLocksFeedAction: {
         recipient?: string | undefined;
         kind?: "lock" | "vesting" | undefined;
         min_pct_of_supply?: number | undefined;
-        include_estimated?: "true" | "false" | "1" | "0" | undefined;
+        include_estimated?: "0" | "1" | "true" | "false" | undefined;
     }, {
         limit?: number | undefined;
         mint?: string | undefined;
@@ -62,7 +62,7 @@ export declare const tokenLocksFeedAction: {
         recipient?: string | undefined;
         kind?: "lock" | "vesting" | undefined;
         min_pct_of_supply?: number | undefined;
-        include_estimated?: "true" | "false" | "1" | "0" | undefined;
+        include_estimated?: "0" | "1" | "true" | "false" | undefined;
     }>;
     handler: (agent: unknown, input: TokenLocksFeedParams) => Promise<{
         status: string;

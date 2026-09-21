@@ -205,3 +205,5 @@ export { walletTrackerWatchlistAction, walletTrackerAddAction, walletTrackerRemo
 export { sniperRecentAction, sniperByDeployerAction, sniperWatchlistAction, sniperWatchlistAddAction, sniperWatchlistRemoveAction };
 export { walletStatsAction, walletPnlAction, walletPositionsAction, walletHoldingsAction, walletTradesAction };
 export { meAction, tokensListAction, almostBondedAction, tokenRiskAction, tokenRiskBatchAction, tokenBundleAction, tokenPoolsAction, tokenDepthAction, tokenHoldersAction, tokenLocksAction, tokenLocksFeedAction, tokenUnlocksAction, tokenFeeSharesAction, tokenFeeClaimsAction, tokenSurgesAction, deployerHistoryAction, deployerAsOfAction, deployerRewardsAction, deployerStatsAction, deployerLeaderboardAction, deployerProfileAction, deployerTokensAction, deployerAlertStatsAction, deployerBestTokensAction, deployerRecentBondsAction, tokenCandlesAction, tokenFlowAction, tokenTopTradersAction, tokenTradesAction, walletClassifyAction, streamSessionsAction, streamSessionKillAction };
+// Operator visibility into the current agent's lifetime payment allowance.
+export { getAuthorizedPaymentAmount } from "./tools/index.js";

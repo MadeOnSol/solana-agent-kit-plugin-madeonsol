@@ -6,11 +6,34 @@
  * (MadeOnSol RapidAPI marketplace was retired 2026-04-19).
  * Get a free `msk_` key at https://madeonsol.com/pricing.
  */
+import { SolanaPaymentBudget, createSolanaPaidFetch, solanaPaymentPolicyFromConfig } from "../solana-payment.js";
 import { VERSION } from "../version.js";
 const BASE_URL = "https://madeonsol.com";
 // Cache by agent identity, never by process. A request retains its own context
 // even if another agent initializes or this agent rotates credentials mid-call.
 const authByAgent = new WeakMap();
+// Keep the allowance across auth retries and credential/mode rotation on this agent.
+// Runtime policy changes fail closed; deliberately create a new agent for a new allowance.
+const budgetByAgent = new WeakMap();
+function paymentBudget(agent) {
+    const policy = solanaPaymentPolicyFromConfig(key => getConfig(agent, key));
+    // Normalize the configured URL exactly as the budget constructor does.
+    policy.rpcUrl = new URL(policy.rpcUrl).href;
+    const existing = budgetByAgent.get(agent);
+    if (existing) {
+        for (const key of ["payTo", "feePayer", "maxAmountAtomic", "maxTotalAmountAtomic", "rpcUrl"]) {
+            if (policy[key] !== existing.policy[key])
+                throw new Error("Solana payment policy changed; use a new agent for a new allowance");
+        }
+        return existing;
+    }
+    const budget = new SolanaPaymentBudget(policy);
+    budgetByAgent.set(agent, budget);
+    return budget;
+}
+export function getAuthorizedPaymentAmount(agent) {
+    return budgetByAgent.get(agent)?.authorizedAmountAtomic ?? "0";
+}
 /** Most recent rate-limit headers, populated by every successful API request. */
 export let lastRateLimit = {};
 function captureRateLimit(res) {
@@ -28,11 +51,12 @@ function getAuth(agent) {
     const apiKey = getConfig(agent, "MADEONSOL_API_KEY");
     // A configured API key always wins; do not retain an unused private key.
     const privateKey = apiKey ? undefined : getConfig(agent, "SVM_PRIVATE_KEY");
+    const budget = privateKey ? paymentBudget(agent) : undefined;
     const cached = authByAgent.get(agent);
     if (cached && cached.apiKey === apiKey && cached.privateKey === privateKey) {
         return cached.context;
     }
-    const entry = { apiKey, privateKey, context: createAuth(apiKey, privateKey) };
+    const entry = { apiKey, privateKey, context: createAuth(apiKey, privateKey, budget) };
     authByAgent.set(agent, entry);
     // Share pending initialization, but allow a failed setup to be retried. An
     // older failure must not evict credentials installed by a newer request.
@@ -42,7 +66,7 @@ function getAuth(agent) {
     });
     return entry.context;
 }
-async function createAuth(apiKey, privateKey) {
+async function createAuth(apiKey, privateKey, budget) {
     if (apiKey) {
         console.log("[madeonsol] Using MadeOnSol API key (Bearer auth)");
         return {
@@ -52,16 +76,9 @@ async function createAuth(apiKey, privateKey) {
         };
     }
     else if (privateKey) {
-        const { wrapFetchWithPayment } = await import("@x402/fetch");
-        const { x402Client } = await import("@x402/core/client");
-        const { ExactSvmScheme } = await import("@x402/svm/exact/client");
-        const { createKeyPairSignerFromBytes } = await import("@solana/kit");
-        const { base58 } = await import("@scure/base");
-        const signer = await createKeyPairSignerFromBytes(base58.decode(privateKey));
-        const client = new x402Client();
-        client.register("solana:*", new ExactSvmScheme(signer));
-        console.log(`[madeonsol] x402 payments enabled, wallet: ${signer.address}`);
-        return { mode: "x402", headers: {}, paidFetch: wrapFetchWithPayment(fetch, client) };
+        const paidFetch = await createSolanaPaidFetch(privateKey, budget, BASE_URL);
+        console.log("[madeonsol] x402 payments enabled with an explicit authorization budget");
+        return { mode: "x402", headers: {}, paidFetch };
     }
     else {
         console.warn("\n[madeonsol] No auth configured — every API call will fail.\n" +

@@ -1239,7 +1239,7 @@ declare const MadeOnSolPlugin: {
             recipient?: string | undefined;
             kind?: "lock" | "vesting" | undefined;
             min_pct_of_supply?: number | undefined;
-            include_estimated?: "true" | "false" | "1" | "0" | undefined;
+            include_estimated?: "0" | "1" | "true" | "false" | undefined;
         }, {
             limit?: number | undefined;
             mint?: string | undefined;
@@ -1252,7 +1252,7 @@ declare const MadeOnSolPlugin: {
             recipient?: string | undefined;
             kind?: "lock" | "vesting" | undefined;
             min_pct_of_supply?: number | undefined;
-            include_estimated?: "true" | "false" | "1" | "0" | undefined;
+            include_estimated?: "0" | "1" | "true" | "false" | undefined;
         }>;
         handler: (agent: unknown, input: import("./tools/index.js").TokenLocksFeedParams) => Promise<{
             status: string;
@@ -1449,13 +1449,13 @@ declare const MadeOnSolPlugin: {
             deployer_tier?: "elite" | "good" | "moderate" | "rising" | "cold" | "unranked" | undefined;
             before?: string | undefined;
             kind?: "surge" | "revival" | undefined;
-            stats?: "true" | "false" | "1" | "0" | undefined;
+            stats?: "0" | "1" | "true" | "false" | undefined;
             exclude_flags?: string | undefined;
             min_mc_usd?: number | undefined;
             max_mc_usd?: number | undefined;
             min_buys?: number | undefined;
             launchpad?: string | undefined;
-            only_clean?: "true" | "false" | "1" | "0" | undefined;
+            only_clean?: "0" | "1" | "true" | "false" | undefined;
             days?: number | undefined;
         }, {
             limit?: number | undefined;
@@ -1465,13 +1465,13 @@ declare const MadeOnSolPlugin: {
             deployer_tier?: "elite" | "good" | "moderate" | "rising" | "cold" | "unranked" | undefined;
             before?: string | undefined;
             kind?: "surge" | "revival" | undefined;
-            stats?: "true" | "false" | "1" | "0" | undefined;
+            stats?: "0" | "1" | "true" | "false" | undefined;
             exclude_flags?: string | undefined;
             min_mc_usd?: number | undefined;
             max_mc_usd?: number | undefined;
             min_buys?: number | undefined;
             launchpad?: string | undefined;
-            only_clean?: "true" | "false" | "1" | "0" | undefined;
+            only_clean?: "0" | "1" | "true" | "false" | undefined;
             days?: number | undefined;
         }>;
         handler: (agent: unknown, input: import("./tools/index.js").TokenSurgesParams) => Promise<{
@@ -2146,3 +2146,4 @@ export { walletTrackerWatchlistAction, walletTrackerAddAction, walletTrackerRemo
 export { sniperRecentAction, sniperByDeployerAction, sniperWatchlistAction, sniperWatchlistAddAction, sniperWatchlistRemoveAction };
 export { walletStatsAction, walletPnlAction, walletPositionsAction, walletHoldingsAction, walletTradesAction };
 export { meAction, tokensListAction, almostBondedAction, tokenRiskAction, tokenRiskBatchAction, tokenBundleAction, tokenPoolsAction, tokenDepthAction, tokenHoldersAction, tokenLocksAction, tokenLocksFeedAction, tokenUnlocksAction, tokenFeeSharesAction, tokenFeeClaimsAction, tokenSurgesAction, deployerHistoryAction, deployerAsOfAction, deployerRewardsAction, deployerStatsAction, deployerLeaderboardAction, deployerProfileAction, deployerTokensAction, deployerAlertStatsAction, deployerBestTokensAction, deployerRecentBondsAction, tokenCandlesAction, tokenFlowAction, tokenTopTradersAction, tokenTradesAction, walletClassifyAction, streamSessionsAction, streamSessionKillAction };
+export { getAuthorizedPaymentAmount } from "./tools/index.js";

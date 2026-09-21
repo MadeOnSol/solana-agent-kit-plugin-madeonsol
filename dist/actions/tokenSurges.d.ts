@@ -60,13 +60,13 @@ export declare const tokenSurgesAction: {
         deployer_tier?: "elite" | "good" | "moderate" | "rising" | "cold" | "unranked" | undefined;
         before?: string | undefined;
         kind?: "surge" | "revival" | undefined;
-        stats?: "true" | "false" | "1" | "0" | undefined;
+        stats?: "0" | "1" | "true" | "false" | undefined;
         exclude_flags?: string | undefined;
         min_mc_usd?: number | undefined;
         max_mc_usd?: number | undefined;
         min_buys?: number | undefined;
         launchpad?: string | undefined;
-        only_clean?: "true" | "false" | "1" | "0" | undefined;
+        only_clean?: "0" | "1" | "true" | "false" | undefined;
         days?: number | undefined;
     }, {
         limit?: number | undefined;
@@ -76,13 +76,13 @@ export declare const tokenSurgesAction: {
         deployer_tier?: "elite" | "good" | "moderate" | "rising" | "cold" | "unranked" | undefined;
         before?: string | undefined;
         kind?: "surge" | "revival" | undefined;
-        stats?: "true" | "false" | "1" | "0" | undefined;
+        stats?: "0" | "1" | "true" | "false" | undefined;
         exclude_flags?: string | undefined;
         min_mc_usd?: number | undefined;
         max_mc_usd?: number | undefined;
         min_buys?: number | undefined;
         launchpad?: string | undefined;
-        only_clean?: "true" | "false" | "1" | "0" | undefined;
+        only_clean?: "0" | "1" | "true" | "false" | undefined;
         days?: number | undefined;
     }>;
     handler: (agent: unknown, input: TokenSurgesParams) => Promise<{
