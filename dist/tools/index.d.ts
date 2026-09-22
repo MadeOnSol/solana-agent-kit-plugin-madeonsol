@@ -337,8 +337,9 @@ export declare function tokenBuyerQuality(agent: Agent, params: {
  * post-create rollup (bought_tokens_after — catches the same-second-separate-tx dev buy —
  * sold_tokens, sold_sol, first_sell_at/last_sell_at), LIVE on-chain holdings (holdings_tokens,
  * holdings_supply_pct — pump.fun 1B denominator, null elsewhere — wallet_empty: is the dev wallet
- * empty NOW), and transferred_out (tokens left without a sell; null = unknown, never a guess),
- * plus as_of. PRO/ULTRA only.
+ * empty NOW), and transfer_status (suspected / none_detected / unknown; transferred_out is its
+ * deprecated boolean view), plus assessment (unknown_inputs / not_assessed, score_version v2) and
+ * as_of. A failed score-critical read is HTTP 503 risk_inputs_unavailable. PRO/ULTRA only.
  */
 export declare function tokenRisk(agent: Agent, params: {
     mint: string;
