@@ -496,9 +496,25 @@ export async function sniperWatchlistRemove(agent: Agent, params: { wallet: stri
   return restQuery(agent, "DELETE", `/sniper/watchlist/${encodeURIComponent(params.wallet)}`);
 }
 
+/**
+ * GET /wallet-tracker/trades. Returns `{ events, count, ordered_by,
+ * next_cursor, next_cursor_slot }`. `action` is "buy" or "sell" (swaps only;
+ * transfers have `action: null`, select them with `event_type: "transfer"`).
+ */
 export async function walletTrackerTrades(
   agent: Agent,
-  params: { wallet?: string; action?: string; event_type?: string; limit?: number; before?: number } = {},
+  params: {
+    wallet?: string;
+    action?: "buy" | "sell";
+    event_type?: "swap" | "transfer";
+    limit?: number;
+    /** "slot" (on-chain order, default on a first page) or "block_time" (ingest clock). */
+    order?: "slot" | "block_time";
+    /** Cursor for order "slot": the previous page's next_cursor_slot. */
+    before_slot?: number;
+    /** Legacy cursor for order "block_time": the previous page's next_cursor. */
+    before?: number;
+  } = {},
 ) {
   const qs = new URLSearchParams();
   for (const [k, v] of Object.entries(params)) {
@@ -1000,25 +1016,40 @@ export async function tokenBatch(agent: Agent, params: { mints: string[] }) {
   return restQuery(agent, "POST", "/token/batch", { mints: params.mints });
 }
 
-// ── Copy-Trade Rules (PRO/ULTRA) ──
+// ── Copy-Trade Rules (PRO+) ──
 
 export async function copyTradeList(agent: Agent) {
   return restQuery(agent, "GET", "/copytrade/subscriptions");
 }
 
+/**
+ * Create a copy-trade rule. Signals fire only for trades by wallets MadeOnSol
+ * tracks as KOLs (GET /api/v1/kol/wallets): any valid Solana address is
+ * accepted into a rule, but an untracked wallet never produces a signal.
+ */
 export async function copyTradeCreate(
   agent: Agent,
   params: {
-    /** 1-50 wallets to copy trades from. */
+    /**
+     * Wallets to copy trades from. The per-rule limit is set by your tier and
+     * enforced by the server: PRO 5, ULTRA 50, BUSINESS 250 (Enterprise
+     * follows Business).
+     */
     source_wallets: string[];
-    /** Required. Fixed SOL amount, proportional multiplier, or percent of source — per sizing_mode. */
+    /**
+     * Required. SOL when sizing_mode is "fixed"; otherwise a multiplier /
+     * fraction of the source size (0.25 = a quarter), never a percent.
+     * "proportional" and "percent_source" are the same maths.
+     */
     sizing_amount: number;
     name?: string;
     min_trade_sol?: number;
+    /** Default "buy" (server side) when omitted. */
     only_action?: "buy" | "sell" | "both";
     sizing_mode?: "fixed" | "proportional" | "percent_source";
     delivery_mode?: "webhook" | "websocket" | "both";
     webhook_url?: string;
+    /** Market-cap band (USD, 0 to 1e12) on the source trade; unknown-MC trades are dropped when set. */
     min_mc_usd?: number | null;
     max_mc_usd?: number | null;
   },
@@ -1222,15 +1253,42 @@ export async function almostBonded(
   return restQuery(agent, "GET", `/tokens/almost-bonded${query}`);
 }
 
-export async function copyTradeSignals(
-  agent: Agent,
-  params: { rule_id?: string; limit?: number; since?: string } = {},
-) {
+/**
+ * Query string for GET /copytrade/signals. The API filters by
+ * `subscription_id`; before 2.1.0 this helper sent `rule_id`, which the API
+ * ignores, so a per-rule request silently returned every rule's signals.
+ * `rule_id` is still accepted here as a deprecated alias and is sent as
+ * `subscription_id`. Exported for tests.
+ */
+export function copyTradeSignalsQuery(params: CopyTradeSignalsParams = {}): string {
+  const { rule_id, subscription_id, ...rest } = params;
+  const sub = subscription_id ?? rule_id;
   const qs = new URLSearchParams();
-  for (const [k, v] of Object.entries(params)) {
+  if (sub !== undefined) qs.set("subscription_id", String(sub));
+  for (const [k, v] of Object.entries(rest)) {
     if (v !== undefined) qs.set(k, String(v));
   }
-  const query = qs.toString() ? `?${qs.toString()}` : "";
+  const query = qs.toString();
+  return query ? `?${query}` : "";
+}
+
+export interface CopyTradeSignalsParams {
+  /** Filter to one rule (the rule's `id`). */
+  subscription_id?: number | string;
+  /** @deprecated Use `subscription_id`. Sent as `subscription_id`. */
+  rule_id?: number | string;
+  /** 1–500, default 50. */
+  limit?: number;
+  /** ISO 8601: only signals fired at or after this time. */
+  since?: string;
+  /** Keep signals whose source trade's market cap (USD) was at least this. Drops unknown-MC signals. */
+  min_mc_usd?: number;
+  /** Keep signals whose source trade's market cap (USD) was at most this. Drops unknown-MC signals. */
+  max_mc_usd?: number;
+}
+
+export async function copyTradeSignals(agent: Agent, params: CopyTradeSignalsParams = {}) {
+  const query = copyTradeSignalsQuery(params);
   return restQuery(agent, "GET", `/copytrade/signals${query}`);
 }
 

@@ -142,28 +142,36 @@ export declare const walletTrackerTradesAction: {
     }[][];
     schema: z.ZodObject<{
         wallet: z.ZodOptional<z.ZodString>;
-        action: z.ZodOptional<z.ZodEnum<["buy", "sell", "transfer_in", "transfer_out"]>>;
+        action: z.ZodOptional<z.ZodEnum<["buy", "sell"]>>;
         event_type: z.ZodOptional<z.ZodEnum<["swap", "transfer"]>>;
         limit: z.ZodDefault<z.ZodNumber>;
+        order: z.ZodOptional<z.ZodEnum<["slot", "block_time"]>>;
+        before_slot: z.ZodOptional<z.ZodNumber>;
         before: z.ZodOptional<z.ZodNumber>;
     }, "strip", z.ZodTypeAny, {
         limit: number;
         wallet?: string | undefined;
-        action?: "buy" | "sell" | "transfer_in" | "transfer_out" | undefined;
+        action?: "buy" | "sell" | undefined;
         event_type?: "swap" | "transfer" | undefined;
+        order?: "slot" | "block_time" | undefined;
+        before_slot?: number | undefined;
         before?: number | undefined;
     }, {
         limit?: number | undefined;
         wallet?: string | undefined;
-        action?: "buy" | "sell" | "transfer_in" | "transfer_out" | undefined;
+        action?: "buy" | "sell" | undefined;
         event_type?: "swap" | "transfer" | undefined;
+        order?: "slot" | "block_time" | undefined;
+        before_slot?: number | undefined;
         before?: number | undefined;
     }>;
     handler: (agent: unknown, input: {
         wallet?: string;
-        action?: string;
-        event_type?: string;
+        action?: "buy" | "sell";
+        event_type?: "swap" | "transfer";
         limit?: number;
+        order?: "slot" | "block_time";
+        before_slot?: number;
         before?: number;
     }) => Promise<{
         status: string;

@@ -13,6 +13,8 @@
 
 > Real-time Solana trading intelligence: track 2,000+ KOL wallets with <3s latency on paid keys and x402 pay-per-call (free-tier live feeds are 5-min delayed), score 85K+ Pump.fun deployers, verify any wallet's CURRENT on-chain holdings straight from its token accounts, surface deshred deploy signals ~500ms before on-chain confirmation, detect multi-KOL coordination, and stream every DEX trade. Free tier: 200 requests/day across 40+ endpoints (live feeds 5-min delayed) — no signup payment. Get a key at [madeonsol.com/pricing](https://madeonsol.com/pricing).
 
+> **New in 2.1.0 — per-rule copy-trade signals really filter now.** `copyTradeSignals(agent, { subscription_id })` sends `subscription_id`, the parameter the API reads. Before, the helper sent `rule_id`, which the API ignores, so a per-rule request silently returned the signals of every rule. `rule_id` still works as a deprecated alias and is sent as `subscription_id`. `copyTradeSignals` also gains `min_mc_usd` / `max_mc_usd`. `walletTrackerTrades` and `MADEONSOL_WALLET_TRACKER_TRADES_ACTION` gain `order` (`slot` | `block_time`) and the `before_slot` cursor; their `action` filter is `buy` | `sell` only, since the API always rejected `transfer_in` / `transfer_out` with 400 (select transfers with `event_type: "transfer"`). The copy-trade docs now list Business (250 wallets per rule) and say that signals fire only for tracked KOL wallets.
+
 > **New in 2.0.0 — BREAKING for keyless (x402) mode only: an explicit payment policy is required (security fix, SDK-01).** Configure `X402_PAY_TO`, `X402_FEE_PAYER`, `X402_MAX_AMOUNT_ATOMIC`, `X402_MAX_TOTAL_AMOUNT_ATOMIC` and `SVM_RPC_URL` in the agent config (see the keyless section); `getAuthorizedPaymentAmount()` reports the budget used. Before, keyless mode signed whatever Solana USDC amount, recipient and fee payer a 402 challenge asked for. Now every challenge is checked BEFORE signing against a trusted merchant `payTo`, a trusted facilitator `feePayer` (which must differ from your wallet), the USDC mint, `solana:5eykt…` mainnet, the `exact` scheme, a per-call cap and a lifetime cap. Use the canonical values in the keyless section below; caps must be at least `20000` (0.02 USDC) per call to reach every endpoint. The budget is per client instance / process: not wallet-wide, not shared between processes, reset on a new instance or restart. Keyless requires the base URL exactly `https://madeonsol.com`. **API-key (`msk_`) users: no change, no new config.**
 
 > **New in 1.26.1 — credentials are isolated per agent (security fix, SEC-03).** Fixed: this plugin used to cache the resolved API key / wallet signer at module scope, so if a process ran more than one agent instance, a second `initAuth()` call could silently overwrite or borrow the first agent's credentials — including mid-flight, during concurrent calls. Auth is now cached per agent object; credential rotation, concurrent initialization, and a failed setup on one agent are all race-safe and cannot leak into or clobber another agent's session. No public API change — `initAuth()` / `initPaidFetch()` keep their existing signatures and behavior for single-agent use. Only affects processes that run multiple `SolanaAgentKit` instances with different credentials side by side.
@@ -243,22 +245,25 @@ await agent.methods.deployerHistory(agent, { wallet: "WALLET", limit: 90 }); // 
 
 > Deployer alerts (`MADEONSOL_DEPLOYER_ALERTS_ACTION` / `agent.methods.deployerAlerts()`) now include `deployer_sol_balance` — the deployer wallet's SOL balance at alert time (`null` for historical rows).
 
-### Copy-Trade Rules (PRO/ULTRA)
+### Copy-Trade Rules (PRO+)
 
-Server-side rules that fire signals when a watched source wallet trades. Delivered via webhook (HMAC-signed) and/or WebSocket.
+Server-side rules that fire signals when a source wallet trades. Delivered via webhook (HMAC-signed) and/or WebSocket. Limits: PRO 3 rules × 5 source wallets, ULTRA 20 × 50, BUSINESS 100 × 250 (Enterprise follows Business). The server enforces your tier's limit. Signals fire only for trades by wallets MadeOnSol tracks as KOLs (the roster at `GET /api/v1/kol/wallets`): a rule accepts any valid Solana address, but an untracked wallet never produces a signal.
 
 ```ts
 await agent.methods.copyTradeList(agent);
 await agent.methods.copyTradeCreate(agent, {
   name: "Track Whales",
-  source_wallets: ["WALLET_A", "WALLET_B"],  // 1-50 wallets
+  source_wallets: ["KOL_WALLET_A", "KOL_WALLET_B"],  // tracked KOL wallets; per-rule limit by tier
   sizing_mode: "fixed",
-  sizing_amount: 0.5,                          // required
-  only_action: "buy",
+  sizing_amount: 0.5,                          // required: SOL for "fixed", else a multiplier (0.25 = a quarter)
+  only_action: "buy",                          // default "buy" when omitted
+  min_mc_usd: 20_000,                          // optional MC band on the source trade (USD);
+  max_mc_usd: 2_000_000,                       //   unknown-MC trades are dropped when a bound is set
   delivery_mode: "webhook",
   webhook_url: "https://you.com/hook",
 });
-await agent.methods.copyTradeSignals(agent, { limit: 50 });             // up to 7 days
+// up to 7 days; filter one rule with subscription_id (rule_id is a deprecated alias)
+await agent.methods.copyTradeSignals(agent, { subscription_id: 123, limit: 50, min_mc_usd: 20_000 });
 ```
 
 ### Streaming Sessions *(new in 1.15)*

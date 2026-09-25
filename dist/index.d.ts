@@ -489,28 +489,36 @@ declare const MadeOnSolPlugin: {
         }[][];
         schema: import("zod").ZodObject<{
             wallet: import("zod").ZodOptional<import("zod").ZodString>;
-            action: import("zod").ZodOptional<import("zod").ZodEnum<["buy", "sell", "transfer_in", "transfer_out"]>>;
+            action: import("zod").ZodOptional<import("zod").ZodEnum<["buy", "sell"]>>;
             event_type: import("zod").ZodOptional<import("zod").ZodEnum<["swap", "transfer"]>>;
             limit: import("zod").ZodDefault<import("zod").ZodNumber>;
+            order: import("zod").ZodOptional<import("zod").ZodEnum<["slot", "block_time"]>>;
+            before_slot: import("zod").ZodOptional<import("zod").ZodNumber>;
             before: import("zod").ZodOptional<import("zod").ZodNumber>;
         }, "strip", import("zod").ZodTypeAny, {
             limit: number;
             wallet?: string | undefined;
-            action?: "buy" | "sell" | "transfer_in" | "transfer_out" | undefined;
+            action?: "buy" | "sell" | undefined;
             event_type?: "swap" | "transfer" | undefined;
+            order?: "slot" | "block_time" | undefined;
+            before_slot?: number | undefined;
             before?: number | undefined;
         }, {
             limit?: number | undefined;
             wallet?: string | undefined;
-            action?: "buy" | "sell" | "transfer_in" | "transfer_out" | undefined;
+            action?: "buy" | "sell" | undefined;
             event_type?: "swap" | "transfer" | undefined;
+            order?: "slot" | "block_time" | undefined;
+            before_slot?: number | undefined;
             before?: number | undefined;
         }>;
         handler: (agent: unknown, input: {
             wallet?: string;
-            action?: string;
-            event_type?: string;
+            action?: "buy" | "sell";
+            event_type?: "swap" | "transfer";
             limit?: number;
+            order?: "slot" | "block_time";
+            before_slot?: number;
             before?: number;
         }) => Promise<{
             status: string;
@@ -1448,11 +1456,11 @@ declare const MadeOnSolPlugin: {
             since?: string | undefined;
             deployer_tier?: "elite" | "good" | "moderate" | "rising" | "cold" | "unranked" | undefined;
             before?: string | undefined;
+            min_mc_usd?: number | undefined;
+            max_mc_usd?: number | undefined;
             kind?: "surge" | "revival" | undefined;
             stats?: "0" | "1" | "true" | "false" | undefined;
             exclude_flags?: string | undefined;
-            min_mc_usd?: number | undefined;
-            max_mc_usd?: number | undefined;
             min_buys?: number | undefined;
             launchpad?: string | undefined;
             only_clean?: "0" | "1" | "true" | "false" | undefined;
@@ -1464,11 +1472,11 @@ declare const MadeOnSolPlugin: {
             since?: string | undefined;
             deployer_tier?: "elite" | "good" | "moderate" | "rising" | "cold" | "unranked" | undefined;
             before?: string | undefined;
+            min_mc_usd?: number | undefined;
+            max_mc_usd?: number | undefined;
             kind?: "surge" | "revival" | undefined;
             stats?: "0" | "1" | "true" | "false" | undefined;
             exclude_flags?: string | undefined;
-            min_mc_usd?: number | undefined;
-            max_mc_usd?: number | undefined;
             min_buys?: number | undefined;
             launchpad?: string | undefined;
             only_clean?: "0" | "1" | "true" | "false" | undefined;

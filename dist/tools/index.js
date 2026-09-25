@@ -372,6 +372,11 @@ export async function sniperWatchlistAdd(agent, params) {
 export async function sniperWatchlistRemove(agent, params) {
     return restQuery(agent, "DELETE", `/sniper/watchlist/${encodeURIComponent(params.wallet)}`);
 }
+/**
+ * GET /wallet-tracker/trades. Returns `{ events, count, ordered_by,
+ * next_cursor, next_cursor_slot }`. `action` is "buy" or "sell" (swaps only;
+ * transfers have `action: null`, select them with `event_type: "transfer"`).
+ */
 export async function walletTrackerTrades(agent, params = {}) {
     const qs = new URLSearchParams();
     for (const [k, v] of Object.entries(params)) {
@@ -736,10 +741,15 @@ export async function tokenGet(agent, params) {
 export async function tokenBatch(agent, params) {
     return restQuery(agent, "POST", "/token/batch", { mints: params.mints });
 }
-// ── Copy-Trade Rules (PRO/ULTRA) ──
+// ── Copy-Trade Rules (PRO+) ──
 export async function copyTradeList(agent) {
     return restQuery(agent, "GET", "/copytrade/subscriptions");
 }
+/**
+ * Create a copy-trade rule. Signals fire only for trades by wallets MadeOnSol
+ * tracks as KOLs (GET /api/v1/kol/wallets): any valid Solana address is
+ * accepted into a rule, but an untracked wallet never produces a signal.
+ */
 export async function copyTradeCreate(agent, params) {
     return restQuery(agent, "POST", "/copytrade/subscriptions", params);
 }
@@ -832,13 +842,28 @@ export async function almostBonded(agent, params = {}) {
     const query = qs.toString() ? `?${qs.toString()}` : "";
     return restQuery(agent, "GET", `/tokens/almost-bonded${query}`);
 }
-export async function copyTradeSignals(agent, params = {}) {
+/**
+ * Query string for GET /copytrade/signals. The API filters by
+ * `subscription_id`; before 2.1.0 this helper sent `rule_id`, which the API
+ * ignores, so a per-rule request silently returned every rule's signals.
+ * `rule_id` is still accepted here as a deprecated alias and is sent as
+ * `subscription_id`. Exported for tests.
+ */
+export function copyTradeSignalsQuery(params = {}) {
+    const { rule_id, subscription_id, ...rest } = params;
+    const sub = subscription_id ?? rule_id;
     const qs = new URLSearchParams();
-    for (const [k, v] of Object.entries(params)) {
+    if (sub !== undefined)
+        qs.set("subscription_id", String(sub));
+    for (const [k, v] of Object.entries(rest)) {
         if (v !== undefined)
             qs.set(k, String(v));
     }
-    const query = qs.toString() ? `?${qs.toString()}` : "";
+    const query = qs.toString();
+    return query ? `?${query}` : "";
+}
+export async function copyTradeSignals(agent, params = {}) {
+    const query = copyTradeSignalsQuery(params);
     return restQuery(agent, "GET", `/copytrade/signals${query}`);
 }
 // ── Price Alerts (PRO/ULTRA, v1.9) ──

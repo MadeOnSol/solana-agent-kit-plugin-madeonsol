@@ -89,10 +89,12 @@ export const walletTrackerTradesAction = {
     ],
     schema: z.object({
         wallet: z.string().optional().describe("Filter to a specific wallet address"),
-        action: z.enum(["buy", "sell", "transfer_in", "transfer_out"]).optional().describe("Filter by action type"),
+        action: z.enum(["buy", "sell"]).optional().describe("Swaps only: buy or sell. Transfers have action null; select them with event_type 'transfer'"),
         event_type: z.enum(["swap", "transfer"]).optional().describe("Filter by event type"),
         limit: z.number().min(1).max(200).default(50).describe("Max results (1-200)"),
-        before: z.number().optional().describe("Pagination cursor: block_time of last event"),
+        order: z.enum(["slot", "block_time"]).optional().describe("Sort by on-chain slot (default on a first page) or block_time (ingest clock)"),
+        before_slot: z.number().int().optional().describe("Cursor for order 'slot': next_cursor_slot of the previous page"),
+        before: z.number().optional().describe("Legacy cursor for order 'block_time': next_cursor of the previous page"),
     }),
     handler: async (agent, input) => {
         try {
