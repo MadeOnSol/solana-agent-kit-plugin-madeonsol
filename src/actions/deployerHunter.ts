@@ -59,7 +59,7 @@ export const deployerProfileAction = {
   name: "MADEONSOL_DEPLOYER_PROFILE_ACTION",
   similes: ["deployer profile", "is this deployer good", "deployer reputation", "check this deployer", "deployer tier"],
   description:
-    "One Pump.fun deployer's profile — tier, lifetime bonding_rate, recent_bond_rate, totals deployed/bonded, first seen, last deploy, average time-to-bond, and runner_rate. IMPORTANT: an untracked wallet returns a profile with ZEROED counters, not a 404 — check total_deployed before concluding anything, or you will report '0% bond rate' for a wallet that simply has no deploys. Gate runner_rate on labeled_tokens >= 3. Requires an msk_ key.",
+    "One Pump.fun deployer's profile. Returns is_deployer, deployer (tier, lifetime bonding_rate, recent_bond_rate, total_tokens_deployed, total_bonded, first_seen_at, last_deploy_at, avg_time_to_bond_minutes, runner_rate, labeled_tokens), pump_stats, pump_tokens and launchpad_tokens. IMPORTANT: an untracked wallet returns HTTP 200 with is_deployer=false and deployer=null, not a 404 — check is_deployer and deployer.total_tokens_deployed before concluding anything, or you will report '0% bond rate' for a wallet that simply has no deploys. Gate runner_rate on labeled_tokens >= 3. Requires an msk_ key.",
   examples: [
     [{ input: { wallet: "5Q544fKrFoe6tsEbD7S8EmxGTJYAKtTVhAW5Q5pge4j1" }, output: { status: "success" }, explanation: "Reputation for one deployer" }],
   ],

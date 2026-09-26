@@ -322,8 +322,9 @@ export async function deployerLeaderboard(
 }
 
 /**
- * One deployer's profile. An UNTRACKED wallet returns zeroed counters, NOT a
- * 404 — check `total_deployed` before drawing a conclusion about a wallet.
+ * One deployer's profile. An UNTRACKED wallet returns HTTP 200 with
+ * `is_deployer: false` and `deployer: null`, NOT a 404 — check `is_deployer` and
+ * `deployer.total_tokens_deployed` before drawing a conclusion about a wallet.
  */
 export async function deployerProfile(agent: Agent, params: { wallet: string }) {
   return restQuery(agent, "GET", `/deployer-hunter/${encodeURIComponent(params.wallet)}`);
@@ -633,7 +634,7 @@ export async function tokenBuyerQuality(agent: Agent, params: { mint: string }) 
 }
 
 /**
- * Transparent 0–100 rug-risk/safety score (higher = riskier) with band, explainable factors, and
+ * Transparent 0–100 risk score (higher = riskier): risk evidence for your own policy, not a verdict with band, explainable factors, and
  * raw inputs. Also returns a top-level `dev` block (deployer self-activity; null when the mint has
  * no deployer-pipeline row): create-tx self-buy snapshot (buy_sol/buy_tokens/buy_supply_pct),
  * post-create rollup (bought_tokens_after — catches the same-second-separate-tx dev buy —
@@ -996,7 +997,7 @@ export async function tokenBuyerQualityBatch(agent: Agent, params: { mints: stri
 }
 
 /**
- * Bulk rug-risk/safety scoring for 1–50 mints — same per-mint shape as tokenRisk() plus an `as_of` ISO string.
+ * Bulk risk scoring (evidence, not a verdict) for 1–50 mints — same per-mint shape as tokenRisk() plus an `as_of` ISO string.
  * Returns `{ tokens, count }` where `tokens` preserves de-duplicated input order; untracked mints come back as
  * `{ mint, error: "not_tracked" }` and do NOT fail the batch. Counts as one request against quota. PRO/ULTRA only.
  */
