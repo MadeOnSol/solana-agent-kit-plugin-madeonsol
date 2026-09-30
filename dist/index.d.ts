@@ -1247,7 +1247,7 @@ declare const MadeOnSolPlugin: {
             recipient?: string | undefined;
             kind?: "lock" | "vesting" | undefined;
             min_pct_of_supply?: number | undefined;
-            include_estimated?: "0" | "1" | "true" | "false" | undefined;
+            include_estimated?: "0" | "true" | "1" | "false" | undefined;
         }, {
             limit?: number | undefined;
             mint?: string | undefined;
@@ -1260,7 +1260,7 @@ declare const MadeOnSolPlugin: {
             recipient?: string | undefined;
             kind?: "lock" | "vesting" | undefined;
             min_pct_of_supply?: number | undefined;
-            include_estimated?: "0" | "1" | "true" | "false" | undefined;
+            include_estimated?: "0" | "true" | "1" | "false" | undefined;
         }>;
         handler: (agent: unknown, input: import("./tools/index.js").TokenLocksFeedParams) => Promise<{
             status: string;
@@ -1459,11 +1459,11 @@ declare const MadeOnSolPlugin: {
             min_mc_usd?: number | undefined;
             max_mc_usd?: number | undefined;
             kind?: "surge" | "revival" | undefined;
-            stats?: "0" | "1" | "true" | "false" | undefined;
+            stats?: "0" | "true" | "1" | "false" | undefined;
             exclude_flags?: string | undefined;
             min_buys?: number | undefined;
             launchpad?: string | undefined;
-            only_clean?: "0" | "1" | "true" | "false" | undefined;
+            only_clean?: "0" | "true" | "1" | "false" | undefined;
             days?: number | undefined;
         }, {
             limit?: number | undefined;
@@ -1475,11 +1475,11 @@ declare const MadeOnSolPlugin: {
             min_mc_usd?: number | undefined;
             max_mc_usd?: number | undefined;
             kind?: "surge" | "revival" | undefined;
-            stats?: "0" | "1" | "true" | "false" | undefined;
+            stats?: "0" | "true" | "1" | "false" | undefined;
             exclude_flags?: string | undefined;
             min_buys?: number | undefined;
             launchpad?: string | undefined;
-            only_clean?: "0" | "1" | "true" | "false" | undefined;
+            only_clean?: "0" | "true" | "1" | "false" | undefined;
             days?: number | undefined;
         }>;
         handler: (agent: unknown, input: import("./tools/index.js").TokenSurgesParams) => Promise<{

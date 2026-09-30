@@ -7,6 +7,7 @@
  * Get a free `msk_` key at https://madeonsol.com/pricing.
  */
 import { SolanaPaymentBudget, createSolanaPaidFetch, solanaPaymentPolicyFromConfig } from "../solana-payment.js";
+import { readPaidResult, withPaidResult, x402PaymentErrorFrom } from "../x402-recovery.js";
 import { VERSION } from "../version.js";
 const BASE_URL = "https://madeonsol.com";
 // Cache by agent identity, never by process. A request retains its own context
@@ -106,9 +107,18 @@ async function query(agent, path, params) {
                 url.searchParams.set(k, String(v));
         }
     }
-    const res = auth.mode === "x402"
-        ? await auth.paidFetch(url.toString())
-        : await fetch(url.toString(), { headers: auth.headers });
+    if (auth.mode === "x402") {
+        // PAY-05: recovery with the SAME proof already ran inside paidFetch. A
+        // non-2xx is a coded X402PaymentError (paymentId, retryable, resume(),
+        // newPaymentAllowed only for a proven 402 not_paid) — never a silent repay.
+        const res = await auth.paidFetch(url.toString());
+        captureRateLimit(res);
+        const provenance = readPaidResult(res);
+        if (!res.ok)
+            throw await x402PaymentErrorFrom(res, (body) => `MadeOnSol API error ${res.status}: ${body}`);
+        return withPaidResult(await res.json(), provenance);
+    }
+    const res = await fetch(url.toString(), { headers: auth.headers });
     captureRateLimit(res);
     if (!res.ok) {
         const body = await res.text().catch(() => "");
