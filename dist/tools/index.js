@@ -130,10 +130,12 @@ export async function kolFeed(agent, params = {}) {
     return query(agent, "/api/x402/kol/feed", params);
 }
 export async function kolCoordination(agent, params = {}) {
-    const { include_majors, ...rest } = params;
+    const { include_majors, unique_strategies, ...rest } = params;
     const flat = { ...rest };
     if (include_majors !== undefined)
         flat.include_majors = include_majors ? "true" : "false";
+    if (unique_strategies !== undefined)
+        flat.unique_strategies = unique_strategies ? "true" : "false";
     return query(agent, "/api/x402/kol/coordination", flat);
 }
 export async function kolLeaderboard(agent, params = {}) {
@@ -530,7 +532,7 @@ export async function tokenDepth(agent, params) {
  * (tokenCapTable = who bought first). Read live from the ledger at confirmed: every token
  * account of the mint (mint-scoped getProgramAccounts), merged per owner. `concentration.holder_count`
  * is EXACT (distinct non-zero owners minus excluded pools/curves/burns) and null ONLY when the
- * provider refuses the census for a mega-cap (then source.method="getTokenLargestAccounts",
+ * census is not served (provider refusal for a mega-cap, a timeout, or balances adding up to more than the mint supply) (then source.method="getTokenLargestAccounts",
  * source.census_fallback_reason is set, top-20 view only) — never estimated from trades. Each
  * disclosed owner carries labels[] (deployer / kol / early_buyer / buyer / bundle / bot /
  * dump_cluster; empty = unknown, NOT verified clean). Pools, bonding curves, vaults and burns are

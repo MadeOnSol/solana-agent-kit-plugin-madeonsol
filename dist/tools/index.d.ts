@@ -35,7 +35,8 @@ export declare function kolCoordination(agent: Agent, params?: {
     min_kols?: number;
     limit?: number;
     min_avg_winrate?: number;
-    unique_strategies?: number;
+    /** true = require the cluster's KOLs to span distinct strategies (the route accepts true|false; a number is a 400). */
+    unique_strategies?: boolean;
     /** v1.1 — include WIF/BONK/POPCAT etc. Default false. */
     include_majors?: boolean;
     /** v1.1 — peak-density window in minutes (1-60, default 15). */
@@ -384,7 +385,7 @@ export declare function tokenDepth(agent: Agent, params: {
  * (tokenCapTable = who bought first). Read live from the ledger at confirmed: every token
  * account of the mint (mint-scoped getProgramAccounts), merged per owner. `concentration.holder_count`
  * is EXACT (distinct non-zero owners minus excluded pools/curves/burns) and null ONLY when the
- * provider refuses the census for a mega-cap (then source.method="getTokenLargestAccounts",
+ * census is not served (provider refusal for a mega-cap, a timeout, or balances adding up to more than the mint supply) (then source.method="getTokenLargestAccounts",
  * source.census_fallback_reason is set, top-20 view only) — never estimated from trades. Each
  * disclosed owner carries labels[] (deployer / kol / early_buyer / buyer / bundle / bot /
  * dump_cluster; empty = unknown, NOT verified clean). Pools, bonding curves, vaults and burns are

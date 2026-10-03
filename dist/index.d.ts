@@ -1579,19 +1579,19 @@ declare const MadeOnSolPlugin: {
             explanation: string;
         }[][];
         schema: import("zod").ZodObject<{
-            tier: import("zod").ZodOptional<import("zod").ZodEnum<["elite", "good", "rising", "neutral", "spammer", "unranked"]>>;
-            sort: import("zod").ZodDefault<import("zod").ZodEnum<["bonding_rate", "recent", "total_bonded", "last_deploy"]>>;
+            tier: import("zod").ZodOptional<import("zod").ZodEnum<["elite", "good", "moderate", "rising", "cold"]>>;
+            sort: import("zod").ZodDefault<import("zod").ZodEnum<["bonding_rate", "recent_bond_rate", "total_bonded", "last_deploy_at", "post_bond_survival_rate"]>>;
             limit: import("zod").ZodDefault<import("zod").ZodNumber>;
             offset: import("zod").ZodDefault<import("zod").ZodNumber>;
         }, "strip", import("zod").ZodTypeAny, {
-            sort: "recent" | "bonding_rate" | "total_bonded" | "last_deploy";
+            sort: "recent_bond_rate" | "bonding_rate" | "total_bonded" | "last_deploy_at" | "post_bond_survival_rate";
             limit: number;
             offset: number;
-            tier?: "elite" | "good" | "rising" | "unranked" | "neutral" | "spammer" | undefined;
+            tier?: "elite" | "good" | "moderate" | "rising" | "cold" | undefined;
         }, {
-            sort?: "recent" | "bonding_rate" | "total_bonded" | "last_deploy" | undefined;
+            sort?: "recent_bond_rate" | "bonding_rate" | "total_bonded" | "last_deploy_at" | "post_bond_survival_rate" | undefined;
             limit?: number | undefined;
-            tier?: "elite" | "good" | "rising" | "unranked" | "neutral" | "spammer" | undefined;
+            tier?: "elite" | "good" | "moderate" | "rising" | "cold" | undefined;
             offset?: number | undefined;
         }>;
         handler: (agent: unknown, input: {
@@ -1736,16 +1736,16 @@ declare const MadeOnSolPlugin: {
         schema: import("zod").ZodObject<{
             limit: import("zod").ZodDefault<import("zod").ZodNumber>;
             since: import("zod").ZodOptional<import("zod").ZodString>;
-            tier: import("zod").ZodOptional<import("zod").ZodEnum<["elite", "good", "rising", "neutral", "spammer", "unranked"]>>;
+            tier: import("zod").ZodOptional<import("zod").ZodEnum<["elite", "good", "moderate", "rising", "cold"]>>;
             peak_mc_min: import("zod").ZodOptional<import("zod").ZodNumber>;
         }, "strip", import("zod").ZodTypeAny, {
             limit: number;
-            tier?: "elite" | "good" | "rising" | "unranked" | "neutral" | "spammer" | undefined;
+            tier?: "elite" | "good" | "moderate" | "rising" | "cold" | undefined;
             since?: string | undefined;
             peak_mc_min?: number | undefined;
         }, {
             limit?: number | undefined;
-            tier?: "elite" | "good" | "rising" | "unranked" | "neutral" | "spammer" | undefined;
+            tier?: "elite" | "good" | "moderate" | "rising" | "cold" | undefined;
             since?: string | undefined;
             peak_mc_min?: number | undefined;
         }>;

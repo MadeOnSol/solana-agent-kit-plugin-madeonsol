@@ -37,19 +37,19 @@ export declare const deployerLeaderboardAction: {
         explanation: string;
     }[][];
     schema: z.ZodObject<{
-        tier: z.ZodOptional<z.ZodEnum<["elite", "good", "rising", "neutral", "spammer", "unranked"]>>;
-        sort: z.ZodDefault<z.ZodEnum<["bonding_rate", "recent", "total_bonded", "last_deploy"]>>;
+        tier: z.ZodOptional<z.ZodEnum<["elite", "good", "moderate", "rising", "cold"]>>;
+        sort: z.ZodDefault<z.ZodEnum<["bonding_rate", "recent_bond_rate", "total_bonded", "last_deploy_at", "post_bond_survival_rate"]>>;
         limit: z.ZodDefault<z.ZodNumber>;
         offset: z.ZodDefault<z.ZodNumber>;
     }, "strip", z.ZodTypeAny, {
-        sort: "recent" | "bonding_rate" | "total_bonded" | "last_deploy";
+        sort: "recent_bond_rate" | "bonding_rate" | "total_bonded" | "last_deploy_at" | "post_bond_survival_rate";
         limit: number;
         offset: number;
-        tier?: "elite" | "good" | "rising" | "unranked" | "neutral" | "spammer" | undefined;
+        tier?: "elite" | "good" | "moderate" | "rising" | "cold" | undefined;
     }, {
-        sort?: "recent" | "bonding_rate" | "total_bonded" | "last_deploy" | undefined;
+        sort?: "recent_bond_rate" | "bonding_rate" | "total_bonded" | "last_deploy_at" | "post_bond_survival_rate" | undefined;
         limit?: number | undefined;
-        tier?: "elite" | "good" | "rising" | "unranked" | "neutral" | "spammer" | undefined;
+        tier?: "elite" | "good" | "moderate" | "rising" | "cold" | undefined;
         offset?: number | undefined;
     }>;
     handler: (agent: unknown, input: {
@@ -230,16 +230,16 @@ export declare const deployerRecentBondsAction: {
     schema: z.ZodObject<{
         limit: z.ZodDefault<z.ZodNumber>;
         since: z.ZodOptional<z.ZodString>;
-        tier: z.ZodOptional<z.ZodEnum<["elite", "good", "rising", "neutral", "spammer", "unranked"]>>;
+        tier: z.ZodOptional<z.ZodEnum<["elite", "good", "moderate", "rising", "cold"]>>;
         peak_mc_min: z.ZodOptional<z.ZodNumber>;
     }, "strip", z.ZodTypeAny, {
         limit: number;
-        tier?: "elite" | "good" | "rising" | "unranked" | "neutral" | "spammer" | undefined;
+        tier?: "elite" | "good" | "moderate" | "rising" | "cold" | undefined;
         since?: string | undefined;
         peak_mc_min?: number | undefined;
     }, {
         limit?: number | undefined;
-        tier?: "elite" | "good" | "rising" | "unranked" | "neutral" | "spammer" | undefined;
+        tier?: "elite" | "good" | "moderate" | "rising" | "cold" | undefined;
         since?: string | undefined;
         peak_mc_min?: number | undefined;
     }>;

@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { deployerStats, deployerLeaderboard, deployerProfile, deployerTokens, deployerAlertStats, deployerBestTokens, deployerRecentBonds, } from "../tools/index.js";
-const TIERS = ["elite", "good", "rising", "neutral", "spammer", "unranked"];
+// The routes' tier filter (tierFilterSchema, src/lib/deployer-utils.ts). "neutral" / "spammer" / "unranked" were rejected with a 400.
+const TIERS = ["elite", "good", "moderate", "rising", "cold"];
 export const deployerStatsAction = {
     name: "MADEONSOL_DEPLOYER_STATS_ACTION",
     similes: ["deployer ecosystem stats", "how many deployers are tracked", "chain-wide bond rate", "deployer tier counts", "pump.fun deployer overview"],
@@ -23,11 +24,11 @@ export const deployerLeaderboardAction = {
     similes: ["deployer leaderboard", "best pump.fun deployers", "top deployers", "elite deployers", "deployer ranking"],
     description: "Pump.fun deployer reputation leaderboard, ranked by bonding rate, recent form, total bonded, or last deploy. Unranked deployers are excluded. IMPORTANT: compare bonding_rate (LIFETIME) against recent_bond_rate (ROLLING) — the gap between them is the signal, not either number alone; a deployer at 0.40 lifetime and 0.05 recent is cooling off. runner_rate (share of labeled tokens that ran rather than dumped) is only meaningful once labeled_tokens >= 3. Requires an msk_ key.",
     examples: [
-        [{ input: { tier: "elite", sort: "recent", limit: 20 }, output: { status: "success" }, explanation: "Elite deployers in current form" }],
+        [{ input: { tier: "elite", sort: "recent_bond_rate", limit: 20 }, output: { status: "success" }, explanation: "Elite deployers in current form" }],
     ],
     schema: z.object({
         tier: z.enum(TIERS).optional().describe("Restrict to one reputation grade"),
-        sort: z.enum(["bonding_rate", "recent", "total_bonded", "last_deploy"]).default("bonding_rate").describe("Ranking axis"),
+        sort: z.enum(["bonding_rate", "recent_bond_rate", "total_bonded", "last_deploy_at", "post_bond_survival_rate"]).default("bonding_rate").describe("Ranking axis"),
         limit: z.number().min(1).max(100).default(20).describe("Page size (1–100, default 20)"),
         offset: z.number().min(0).default(0).describe("Pagination offset"),
     }),
