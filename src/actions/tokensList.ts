@@ -35,7 +35,6 @@ export const tokensListAction = {
       .describe("Filter by primary DEX venue"),
     authority_revoked: z.boolean().optional().describe("Only tokens with mint+freeze authorities revoked"),
     exclude_token2022: z.boolean().optional().describe("Skip Token-2022 mints (transfer fees / hooks)"),
-    min_lp_burnt_pct: z.number().min(0).max(100).optional().describe("Minimum % of LP tokens burnt"),
     min_volume_1h_usd: z.number().min(0).optional().describe("Minimum computed 1h volume USD"),
     max_mev_share_pct: z.number().min(0).max(100).optional().describe("Maximum MEV-share % of recent buys"),
     mc_change_1h_min_pct: z.number().optional().describe("Minimum 1h MC change %"),
@@ -60,7 +59,6 @@ export const tokensListAction = {
       primary_dex?: "pumpfun" | "pumpswap" | "raydium" | "meteora" | "orca" | "letsbonk" | "other";
       authority_revoked?: boolean;
       exclude_token2022?: boolean;
-      min_lp_burnt_pct?: number;
       min_volume_1h_usd?: number;
       max_mev_share_pct?: number;
       mc_change_1h_min_pct?: number;

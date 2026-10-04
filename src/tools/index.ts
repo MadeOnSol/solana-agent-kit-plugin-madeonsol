@@ -241,7 +241,7 @@ export async function kolCompare(agent: Agent, params: { wallets: string[] }) {
 
 export async function kolAlertsRecent(
   agent: Agent,
-  params: { window?: string; types?: string[]; min_severity?: string; limit?: number } = {},
+  params: { window?: "1h" | "6h" | "24h"; types?: string[]; limit?: number } = {},
 ) {
   const { types, ...rest } = params;
   const flat: Record<string, string | number> = { ...(rest as Record<string, string | number>) };
@@ -1210,7 +1210,6 @@ export async function tokensList(
     primary_dex?: "pumpfun" | "pumpswap" | "raydium" | "meteora" | "orca" | "letsbonk" | "other";
     authority_revoked?: boolean;
     exclude_token2022?: boolean;
-    min_lp_burnt_pct?: number;
     min_volume_1h_usd?: number;
     max_mev_share_pct?: number;
     mc_change_1h_min_pct?: number;

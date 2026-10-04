@@ -792,25 +792,21 @@ declare const MadeOnSolPlugin: {
             explanation: string;
         }[][];
         schema: import("zod").ZodObject<{
-            window: import("zod").ZodDefault<import("zod").ZodEnum<["5m", "15m", "1h", "6h", "24h"]>>;
+            window: import("zod").ZodDefault<import("zod").ZodEnum<["1h", "6h", "24h"]>>;
             types: import("zod").ZodOptional<import("zod").ZodArray<import("zod").ZodEnum<["consensus_cluster", "fresh_token_kol_buy", "heating_up"]>, "many">>;
-            min_severity: import("zod").ZodOptional<import("zod").ZodEnum<["low", "medium", "high"]>>;
             limit: import("zod").ZodDefault<import("zod").ZodNumber>;
         }, "strip", import("zod").ZodTypeAny, {
             limit: number;
-            window: "1h" | "6h" | "24h" | "5m" | "15m";
+            window: "1h" | "6h" | "24h";
             types?: ("consensus_cluster" | "fresh_token_kol_buy" | "heating_up")[] | undefined;
-            min_severity?: "high" | "medium" | "low" | undefined;
         }, {
             limit?: number | undefined;
             types?: ("consensus_cluster" | "fresh_token_kol_buy" | "heating_up")[] | undefined;
-            window?: "1h" | "6h" | "24h" | "5m" | "15m" | undefined;
-            min_severity?: "high" | "medium" | "low" | undefined;
+            window?: "1h" | "6h" | "24h" | undefined;
         }>;
         handler: (agent: unknown, input: {
-            window?: string;
+            window?: "1h" | "6h" | "24h";
             types?: string[];
-            min_severity?: string;
             limit?: number;
         }) => Promise<{
             status: string;
@@ -947,7 +943,6 @@ declare const MadeOnSolPlugin: {
             primary_dex: import("zod").ZodOptional<import("zod").ZodEnum<["pumpfun", "pumpswap", "raydium", "meteora", "orca", "letsbonk", "other"]>>;
             authority_revoked: import("zod").ZodOptional<import("zod").ZodBoolean>;
             exclude_token2022: import("zod").ZodOptional<import("zod").ZodBoolean>;
-            min_lp_burnt_pct: import("zod").ZodOptional<import("zod").ZodNumber>;
             min_volume_1h_usd: import("zod").ZodOptional<import("zod").ZodNumber>;
             max_mev_share_pct: import("zod").ZodOptional<import("zod").ZodNumber>;
             mc_change_1h_min_pct: import("zod").ZodOptional<import("zod").ZodNumber>;
@@ -970,7 +965,6 @@ declare const MadeOnSolPlugin: {
             primary_dex?: "pumpfun" | "pumpswap" | "raydium" | "meteora" | "orca" | "letsbonk" | "other" | undefined;
             authority_revoked?: boolean | undefined;
             exclude_token2022?: boolean | undefined;
-            min_lp_burnt_pct?: number | undefined;
             min_volume_1h_usd?: number | undefined;
             max_mev_share_pct?: number | undefined;
             mc_change_1h_min_pct?: number | undefined;
@@ -989,7 +983,6 @@ declare const MadeOnSolPlugin: {
             primary_dex?: "pumpfun" | "pumpswap" | "raydium" | "meteora" | "orca" | "letsbonk" | "other" | undefined;
             authority_revoked?: boolean | undefined;
             exclude_token2022?: boolean | undefined;
-            min_lp_burnt_pct?: number | undefined;
             min_volume_1h_usd?: number | undefined;
             max_mev_share_pct?: number | undefined;
             mc_change_1h_min_pct?: number | undefined;
@@ -1005,7 +998,6 @@ declare const MadeOnSolPlugin: {
             primary_dex?: "pumpfun" | "pumpswap" | "raydium" | "meteora" | "orca" | "letsbonk" | "other";
             authority_revoked?: boolean;
             exclude_token2022?: boolean;
-            min_lp_burnt_pct?: number;
             min_volume_1h_usd?: number;
             max_mev_share_pct?: number;
             mc_change_1h_min_pct?: number;

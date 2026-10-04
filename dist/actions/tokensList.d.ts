@@ -24,7 +24,6 @@ export declare const tokensListAction: {
         primary_dex: z.ZodOptional<z.ZodEnum<["pumpfun", "pumpswap", "raydium", "meteora", "orca", "letsbonk", "other"]>>;
         authority_revoked: z.ZodOptional<z.ZodBoolean>;
         exclude_token2022: z.ZodOptional<z.ZodBoolean>;
-        min_lp_burnt_pct: z.ZodOptional<z.ZodNumber>;
         min_volume_1h_usd: z.ZodOptional<z.ZodNumber>;
         max_mev_share_pct: z.ZodOptional<z.ZodNumber>;
         mc_change_1h_min_pct: z.ZodOptional<z.ZodNumber>;
@@ -47,7 +46,6 @@ export declare const tokensListAction: {
         primary_dex?: "pumpfun" | "pumpswap" | "raydium" | "meteora" | "orca" | "letsbonk" | "other" | undefined;
         authority_revoked?: boolean | undefined;
         exclude_token2022?: boolean | undefined;
-        min_lp_burnt_pct?: number | undefined;
         min_volume_1h_usd?: number | undefined;
         max_mev_share_pct?: number | undefined;
         mc_change_1h_min_pct?: number | undefined;
@@ -66,7 +64,6 @@ export declare const tokensListAction: {
         primary_dex?: "pumpfun" | "pumpswap" | "raydium" | "meteora" | "orca" | "letsbonk" | "other" | undefined;
         authority_revoked?: boolean | undefined;
         exclude_token2022?: boolean | undefined;
-        min_lp_burnt_pct?: number | undefined;
         min_volume_1h_usd?: number | undefined;
         max_mev_share_pct?: number | undefined;
         mc_change_1h_min_pct?: number | undefined;
@@ -82,7 +79,6 @@ export declare const tokensListAction: {
         primary_dex?: "pumpfun" | "pumpswap" | "raydium" | "meteora" | "orca" | "letsbonk" | "other";
         authority_revoked?: boolean;
         exclude_token2022?: boolean;
-        min_lp_burnt_pct?: number;
         min_volume_1h_usd?: number;
         max_mev_share_pct?: number;
         mc_change_1h_min_pct?: number;

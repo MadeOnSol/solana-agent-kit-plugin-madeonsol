@@ -86,9 +86,8 @@ export declare function kolCompare(agent: Agent, params: {
     wallets: string[];
 }): Promise<any>;
 export declare function kolAlertsRecent(agent: Agent, params?: {
-    window?: string;
+    window?: "1h" | "6h" | "24h";
     types?: string[];
-    min_severity?: string;
     limit?: number;
 }): Promise<any>;
 export declare function kolPnl(agent: Agent, params: {
@@ -767,7 +766,6 @@ export declare function tokensList(agent: Agent, params?: {
     primary_dex?: "pumpfun" | "pumpswap" | "raydium" | "meteora" | "orca" | "letsbonk" | "other";
     authority_revoked?: boolean;
     exclude_token2022?: boolean;
-    min_lp_burnt_pct?: number;
     min_volume_1h_usd?: number;
     max_mev_share_pct?: number;
     mc_change_1h_min_pct?: number;

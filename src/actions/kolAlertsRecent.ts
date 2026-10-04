@@ -8,18 +8,17 @@ export const kolAlertsRecentAction = {
     "Live KOL alert feed from MadeOnSol — consensus clusters, fresh-token KOL buys, and heating-up wallets unified into one stream. Sorted by detected_at DESC then severity.",
   examples: [
     [
-      { input: { window: "15m", limit: 20 }, output: { status: "success" }, explanation: "Show recent KOL alerts in the last 15 minutes" },
+      { input: { window: "1h", limit: 20 }, output: { status: "success" }, explanation: "Show recent KOL alerts in the last hour" },
     ],
   ],
   schema: z.object({
-    window: z.enum(["5m", "15m", "1h", "6h", "24h"]).default("15m").describe("Lookback window"),
+    window: z.enum(["1h", "6h", "24h"]).default("6h").describe("Lookback window (1h, 6h or 24h; default 6h)"),
     types: z.array(z.enum(["consensus_cluster", "fresh_token_kol_buy", "heating_up"])).optional().describe("Filter to specific alert types"),
-    min_severity: z.enum(["low", "medium", "high"]).optional().describe("Minimum severity to include"),
-    limit: z.number().min(1).max(200).default(50).describe("Max alerts"),
+    limit: z.number().min(1).max(100).default(30).describe("Max alerts (1-100)"),
   }),
   handler: async (
     agent: unknown,
-    input: { window?: string; types?: string[]; min_severity?: string; limit?: number },
+    input: { window?: "1h" | "6h" | "24h"; types?: string[]; limit?: number },
   ) => {
     try {
       const data = await kolAlertsRecent(agent, input);
