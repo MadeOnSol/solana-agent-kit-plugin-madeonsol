@@ -3,7 +3,7 @@ import { sniperRecent, sniperByDeployer, sniperWatchlist, sniperWatchlistAdd, sn
 export const sniperRecentAction = {
     name: "MADEONSOL_SNIPER_RECENT_ACTION",
     similes: ["sniper feed", "recent deploys", "new pump.fun launches", "elite deployer launches"],
-    description: "Deshred pre-confirm pump.fun deploy feed — new launches surface ~500ms before on-chain confirmation. PRO (elite/good tiers) or ULTRA (every tier). Added 2026-09-10.",
+    description: "Early deploy instruction observations. ULTRA/BUSINESS/ENTERPRISE API key required. Execution is initially unknown; no guaranteed lead time.",
     examples: [
         [{ input: { limit: 10 }, output: { status: "success" }, explanation: "Get the 10 most recent tracked deployer launches" }],
     ],
@@ -48,7 +48,7 @@ export const sniperByDeployerAction = {
 export const sniperWatchlistAction = {
     name: "MADEONSOL_SNIPER_WATCHLIST_ACTION",
     similes: ["sniper watchlist", "tracked deployers", "my deployer watchlist"],
-    description: "List your custom sniper watchlist (tracked deployer wallets, any tier). PRO+/ULTRA. Added 2026-09-10.",
+    description: "List your custom sniper watchlist (tracked deployer wallets, any tier). ULTRA/BUSINESS/ENTERPRISE. Added 2026-09-10.",
     examples: [
         [{ input: {}, output: { status: "success" }, explanation: "List tracked deployer wallets" }],
     ],
@@ -66,7 +66,7 @@ export const sniperWatchlistAction = {
 export const sniperWatchlistAddAction = {
     name: "MADEONSOL_SNIPER_WATCHLIST_ADD_ACTION",
     similes: ["add to sniper watchlist", "track this deployer for snipes"],
-    description: "Add one or many deployer wallets to your sniper watchlist. PRO+/ULTRA. Added 2026-09-10.",
+    description: "Add one or many deployer wallets to your sniper watchlist. ULTRA/BUSINESS/ENTERPRISE. Added 2026-09-10.",
     examples: [
         [{ input: { wallet: "5Q544fKrFoe6tsEbD7S8EmxGTJYAKtTVhAW5Q5pge4j1" }, output: { status: "success" }, explanation: "Add a deployer wallet to the sniper watchlist" }],
     ],
@@ -88,7 +88,7 @@ export const sniperWatchlistAddAction = {
 export const sniperWatchlistRemoveAction = {
     name: "MADEONSOL_SNIPER_WATCHLIST_REMOVE_ACTION",
     similes: ["remove from sniper watchlist", "untrack this deployer"],
-    description: "Remove a deployer wallet from your sniper watchlist. PRO+/ULTRA. Added 2026-09-10.",
+    description: "Remove a deployer wallet from your sniper watchlist. ULTRA/BUSINESS/ENTERPRISE. Added 2026-09-10.",
     examples: [
         [{ input: { wallet: "5Q544fKrFoe6tsEbD7S8EmxGTJYAKtTVhAW5Q5pge4j1" }, output: { status: "success" }, explanation: "Remove a deployer wallet from the sniper watchlist" }],
     ],

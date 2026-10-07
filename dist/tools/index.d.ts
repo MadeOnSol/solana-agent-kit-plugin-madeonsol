@@ -236,7 +236,7 @@ export declare function walletTrackerRelabel(agent: Agent, params: {
     wallet_address: string;
     label: string | null;
 }): Promise<any>;
-/** Deshred pre-confirm pump.fun deploy feed — new launches surface ~500ms before on-chain confirmation. */
+/** Early deploy observations; ULTRA/BUSINESS/ENTERPRISE API key only. Execution is initially unknown; no guaranteed lead time. */
 export declare function sniperRecent(agent: Agent, params?: {
     deployer_tier?: string;
     min_bond_rate?: number;
@@ -244,20 +244,20 @@ export declare function sniperRecent(agent: Agent, params?: {
     watchlist?: boolean;
     limit?: number;
 }): Promise<any>;
-/** Deshred pre-confirm deploys filtered to one deployer wallet. ULTRA only. */
+/** Early deploy observations filtered to one deployer wallet. ULTRA/BUSINESS/ENTERPRISE only. */
 export declare function sniperByDeployer(agent: Agent, params: {
     wallet: string;
     limit?: number;
 }): Promise<any>;
-/** List your custom sniper watchlist (tracked deployer wallets, any tier). PRO+/ULTRA. */
+/** List your custom sniper watchlist (tracked deployer wallets, any tier). ULTRA/BUSINESS/ENTERPRISE. */
 export declare function sniperWatchlist(agent: Agent): Promise<any>;
-/** Add one or many deployer wallets to your sniper watchlist. PRO+/ULTRA. */
+/** Add one or many deployer wallets to your sniper watchlist. ULTRA/BUSINESS/ENTERPRISE. */
 export declare function sniperWatchlistAdd(agent: Agent, params: {
     wallet?: string;
     wallets?: string[];
     label?: string;
 }): Promise<any>;
-/** Remove a deployer wallet from your sniper watchlist. PRO+/ULTRA. */
+/** Remove a deployer wallet from your sniper watchlist. ULTRA/BUSINESS/ENTERPRISE. */
 export declare function sniperWatchlistRemove(agent: Agent, params: {
     wallet: string;
 }): Promise<any>;
@@ -652,9 +652,10 @@ export declare function tokenBatch(agent: Agent, params: {
 }): Promise<any>;
 export declare function copyTradeList(agent: Agent): Promise<any>;
 /**
- * Create a copy-trade rule. Signals fire only for trades by wallets MadeOnSol
- * tracks as KOLs (GET /api/v1/kol/wallets): any valid Solana address is
- * accepted into a rule, but an untracked wallet never produces a signal.
+ * Create a copy-trade rule. Any valid Solana wallet can be a source, KOL or not
+ * (source_admission "any_wallet", production since 2026-10-04; no Wallet
+ * Tracker quota used). On a legacy "kol_only" server only tracked KOL wallets
+ * (GET /api/v1/kol/wallets) fire. Read operational_state on the response.
  */
 export declare function copyTradeCreate(agent: Agent, params: {
     /**

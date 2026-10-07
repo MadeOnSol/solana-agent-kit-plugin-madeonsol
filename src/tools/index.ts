@@ -475,7 +475,7 @@ export async function walletTrackerRelabel(agent: Agent, params: { wallet_addres
 
 // ── Sniper detection (added 2026-09-10 — pre-confirm deshred deploy feed) ──
 
-/** Deshred pre-confirm pump.fun deploy feed — new launches surface ~500ms before on-chain confirmation. */
+/** Early deploy observations; ULTRA/BUSINESS/ENTERPRISE API key only. Execution is initially unknown; no guaranteed lead time. */
 export async function sniperRecent(agent: Agent, params?: { deployer_tier?: string; min_bond_rate?: number; since?: string; watchlist?: boolean; limit?: number }) {
   const qs = new URLSearchParams();
   if (params) {
@@ -487,23 +487,23 @@ export async function sniperRecent(agent: Agent, params?: { deployer_tier?: stri
   return restQuery(agent, "GET", "/sniper/recent" + (query ? "?" + query : ""));
 }
 
-/** Deshred pre-confirm deploys filtered to one deployer wallet. ULTRA only. */
+/** Early deploy observations filtered to one deployer wallet. ULTRA/BUSINESS/ENTERPRISE only. */
 export async function sniperByDeployer(agent: Agent, params: { wallet: string; limit?: number }) {
   const qs = params.limit !== undefined ? `?limit=${params.limit}` : "";
   return restQuery(agent, "GET", `/sniper/by-deployer/${encodeURIComponent(params.wallet)}${qs}`);
 }
 
-/** List your custom sniper watchlist (tracked deployer wallets, any tier). PRO+/ULTRA. */
+/** List your custom sniper watchlist (tracked deployer wallets, any tier). ULTRA/BUSINESS/ENTERPRISE. */
 export async function sniperWatchlist(agent: Agent) {
   return restQuery(agent, "GET", "/sniper/watchlist");
 }
 
-/** Add one or many deployer wallets to your sniper watchlist. PRO+/ULTRA. */
+/** Add one or many deployer wallets to your sniper watchlist. ULTRA/BUSINESS/ENTERPRISE. */
 export async function sniperWatchlistAdd(agent: Agent, params: { wallet?: string; wallets?: string[]; label?: string }) {
   return restQuery(agent, "POST", "/sniper/watchlist", params);
 }
 
-/** Remove a deployer wallet from your sniper watchlist. PRO+/ULTRA. */
+/** Remove a deployer wallet from your sniper watchlist. ULTRA/BUSINESS/ENTERPRISE. */
 export async function sniperWatchlistRemove(agent: Agent, params: { wallet: string }) {
   return restQuery(agent, "DELETE", `/sniper/watchlist/${encodeURIComponent(params.wallet)}`);
 }
@@ -1035,9 +1035,10 @@ export async function copyTradeList(agent: Agent) {
 }
 
 /**
- * Create a copy-trade rule. Signals fire only for trades by wallets MadeOnSol
- * tracks as KOLs (GET /api/v1/kol/wallets): any valid Solana address is
- * accepted into a rule, but an untracked wallet never produces a signal.
+ * Create a copy-trade rule. Any valid Solana wallet can be a source, KOL or not
+ * (source_admission "any_wallet", production since 2026-10-04; no Wallet
+ * Tracker quota used). On a legacy "kol_only" server only tracked KOL wallets
+ * (GET /api/v1/kol/wallets) fire. Read operational_state on the response.
  */
 export async function copyTradeCreate(
   agent: Agent,
@@ -1383,3 +1384,4 @@ export async function kolConsensus(agent: Agent, params: { mint: string }) {
 export async function peakHistory(agent: Agent, params: { mint: string }) {
   return restQuery(agent, "GET", `/tokens/${encodeURIComponent(params.mint)}/peak-history`);
 }
+
