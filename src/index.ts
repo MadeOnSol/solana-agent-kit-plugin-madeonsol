@@ -15,6 +15,8 @@ import { tokensListAction } from "./actions/tokensList.js";
 import { almostBondedAction } from "./actions/almostBonded.js";
 import { tokenRiskAction } from "./actions/tokenRisk.js";
 import { tokenBundleAction } from "./actions/tokenBundle.js";
+import { tokenBundlesAction, tokenBundleShareAction } from "./actions/tokenBundles.js";
+import { kolTokenTradesAction } from "./actions/kolTokenTrades.js";
 import { tokenPoolsAction } from "./actions/tokenPools.js";
 import { tokenDepthAction } from "./actions/tokenDepth.js";
 import { tokenHoldersAction } from "./actions/tokenHolders.js";
@@ -49,7 +51,7 @@ import {
   walletTrackerWatchlist, walletTrackerAdd, walletTrackerRemove, walletTrackerRelabel, walletTrackerTrades, walletTrackerSummary,
   sniperRecent, sniperByDeployer, sniperWatchlist, sniperWatchlistAdd, sniperWatchlistRemove,
   alphaLeaderboard, alphaWallet, alphaLinked,
-  tokenCapTable, tokenBuyerQuality, tokenRisk, tokenRiskBatch, tokenBundle, tokenPools, tokenDepth, tokenHolders, tokenLocks, tokenLocksFeed, tokenUnlocks, tokenFeeShares, tokenFeeClaims, tokenSurges, tokenCandles, tokenFlow, tokenTopTraders, tokenTrades,
+  tokenCapTable, tokenBuyerQuality, tokenRisk, tokenRiskBatch, tokenBundle, tokenPools, tokenDepth, tokenHolders, tokenLocks, tokenLocksFeed, tokenUnlocks, tokenFeeShares, tokenFeeClaims, tokenSurges, tokenCandles, tokenFlow, tokenTopTraders, tokenTrades, tokenBundles, tokenBundleShare, kolTokenTrades,
   deployerHistory,
   deployerAsOf,
   deployerRewards,
@@ -122,6 +124,9 @@ const MadeOnSolPlugin = {
     tokenFlow,
     tokenTopTraders,
     tokenTrades,
+    tokenBundles,
+    tokenBundleShare,
+    kolTokenTrades,
     deployerHistory,
     deployerAsOf,
     deployerRewards,
@@ -220,6 +225,9 @@ const MadeOnSolPlugin = {
     tokenFlowAction,
     tokenTopTradersAction,
     tokenTradesAction,
+    tokenBundlesAction,
+    tokenBundleShareAction,
+    kolTokenTradesAction,
     walletClassifyAction,
     streamSessionsAction,
     streamSessionKillAction,
@@ -241,7 +249,7 @@ export {
   walletTrackerWatchlist, walletTrackerAdd, walletTrackerRemove, walletTrackerRelabel, walletTrackerTrades, walletTrackerSummary,
   sniperRecent, sniperByDeployer, sniperWatchlist, sniperWatchlistAdd, sniperWatchlistRemove,
   alphaLeaderboard, alphaWallet, alphaLinked,
-  tokenCapTable, tokenBuyerQuality, tokenRisk, tokenRiskBatch, tokenBundle, tokenPools, tokenDepth, tokenHolders, tokenLocks, tokenLocksFeed, tokenUnlocks, tokenFeeShares, tokenFeeClaims, tokenSurges, tokenCandles, tokenFlow, tokenTopTraders, tokenTrades,
+  tokenCapTable, tokenBuyerQuality, tokenRisk, tokenRiskBatch, tokenBundle, tokenPools, tokenDepth, tokenHolders, tokenLocks, tokenLocksFeed, tokenUnlocks, tokenFeeShares, tokenFeeClaims, tokenSurges, tokenCandles, tokenFlow, tokenTopTraders, tokenTrades, tokenBundles, tokenBundleShare, kolTokenTrades,
   deployerHistory,
   deployerAsOf,
   deployerRewards,
@@ -264,7 +272,7 @@ export { kolFeedAction, kolCoordinationAction, kolLeaderboardAction, deployerAle
 export { walletTrackerWatchlistAction, walletTrackerAddAction, walletTrackerRemoveAction, walletTrackerRelabelAction, walletTrackerTradesAction, walletTrackerSummaryAction };
 export { sniperRecentAction, sniperByDeployerAction, sniperWatchlistAction, sniperWatchlistAddAction, sniperWatchlistRemoveAction };
 export { walletStatsAction, walletPnlAction, walletPositionsAction, walletHoldingsAction, walletTradesAction };
-export { meAction, tokensListAction, almostBondedAction, tokenRiskAction, tokenRiskBatchAction, tokenBundleAction, tokenPoolsAction, tokenDepthAction, tokenHoldersAction, tokenLocksAction, tokenLocksFeedAction, tokenUnlocksAction, tokenFeeSharesAction, tokenFeeClaimsAction, tokenSurgesAction, deployerHistoryAction, deployerAsOfAction, deployerRewardsAction, deployerStatsAction, deployerLeaderboardAction, deployerProfileAction, deployerTokensAction, deployerAlertStatsAction, deployerBestTokensAction, deployerRecentBondsAction, tokenCandlesAction, tokenFlowAction, tokenTopTradersAction, tokenTradesAction, walletClassifyAction, streamSessionsAction, streamSessionKillAction };
+export { meAction, tokensListAction, almostBondedAction, tokenRiskAction, tokenRiskBatchAction, tokenBundleAction, tokenPoolsAction, tokenDepthAction, tokenHoldersAction, tokenLocksAction, tokenLocksFeedAction, tokenUnlocksAction, tokenFeeSharesAction, tokenFeeClaimsAction, tokenSurgesAction, deployerHistoryAction, deployerAsOfAction, deployerRewardsAction, deployerStatsAction, deployerLeaderboardAction, deployerProfileAction, deployerTokensAction, deployerAlertStatsAction, deployerBestTokensAction, deployerRecentBondsAction, tokenCandlesAction, tokenFlowAction, tokenTopTradersAction, tokenTradesAction, tokenBundlesAction, tokenBundleShareAction, kolTokenTradesAction, walletClassifyAction, streamSessionsAction, streamSessionKillAction };
 
 // Operator visibility into the current agent's lifetime payment allowance.
 export { getAuthorizedPaymentAmount } from "./tools/index.js";

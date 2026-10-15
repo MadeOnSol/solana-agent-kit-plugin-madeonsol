@@ -15,6 +15,8 @@ import { tokensListAction } from "./actions/tokensList.js";
 import { almostBondedAction } from "./actions/almostBonded.js";
 import { tokenRiskAction } from "./actions/tokenRisk.js";
 import { tokenBundleAction } from "./actions/tokenBundle.js";
+import { tokenBundlesAction, tokenBundleShareAction } from "./actions/tokenBundles.js";
+import { kolTokenTradesAction } from "./actions/kolTokenTrades.js";
 import { tokenPoolsAction } from "./actions/tokenPools.js";
 import { tokenDepthAction } from "./actions/tokenDepth.js";
 import { tokenHoldersAction } from "./actions/tokenHolders.js";
@@ -35,7 +37,7 @@ import { tokenRiskBatchAction } from "./actions/tokenRiskBatch.js";
 import { tokenTradesAction } from "./actions/tokenTrades.js";
 import { walletClassifyAction } from "./actions/walletClassify.js";
 import { streamSessionsAction, streamSessionKillAction } from "./actions/streamSessions.js";
-import { kolFeed, kolCoordination, kolLeaderboard, deployerAlerts, kolPnl, kolTrendingTokens, kolTokenEntryOrder, kolCompare, kolAlertsRecent, createWebhook, listWebhooks, deleteWebhook, updateWebhook, testWebhook, getStreamToken, streamSessions, streamSessionKill, walletTrackerWatchlist, walletTrackerAdd, walletTrackerRemove, walletTrackerRelabel, walletTrackerTrades, walletTrackerSummary, sniperRecent, sniperByDeployer, sniperWatchlist, sniperWatchlistAdd, sniperWatchlistRemove, alphaLeaderboard, alphaWallet, alphaLinked, tokenCapTable, tokenBuyerQuality, tokenRisk, tokenRiskBatch, tokenBundle, tokenPools, tokenDepth, tokenHolders, tokenLocks, tokenLocksFeed, tokenUnlocks, tokenFeeShares, tokenFeeClaims, tokenSurges, tokenCandles, tokenFlow, tokenTopTraders, tokenTrades, deployerHistory, deployerAsOf, deployerRewards, deployerStats, deployerLeaderboard, deployerProfile, deployerTokens, deployerAlertStats, deployerBestTokens, deployerRecentBonds, copyTradeList, copyTradeCreate, copyTradeGet, copyTradeUpdate, copyTradeDelete, copyTradeSignals, coordinationAlertsList, coordinationAlertsCreate, coordinationAlertsGet, coordinationAlertsUpdate, coordinationAlertsDelete, kolFirstTouches, firstTouchSubscriptionsList, firstTouchSubscriptionsCreate, firstTouchSubscriptionsGet, firstTouchSubscriptionsUpdate, firstTouchSubscriptionsDelete, priceAlertsList, priceAlertsCreate, priceAlertsGet, priceAlertsUpdate, priceAlertsDelete, priceAlertsEvents, scoutLeaderboard, coordinationHistory, kolConsensus, peakHistory, walletStats, walletPnl, walletPositions, walletHoldings, walletTrades, walletClassify, me, tokensList, almostBonded } from "./tools/index.js";
+import { kolFeed, kolCoordination, kolLeaderboard, deployerAlerts, kolPnl, kolTrendingTokens, kolTokenEntryOrder, kolCompare, kolAlertsRecent, createWebhook, listWebhooks, deleteWebhook, updateWebhook, testWebhook, getStreamToken, streamSessions, streamSessionKill, walletTrackerWatchlist, walletTrackerAdd, walletTrackerRemove, walletTrackerRelabel, walletTrackerTrades, walletTrackerSummary, sniperRecent, sniperByDeployer, sniperWatchlist, sniperWatchlistAdd, sniperWatchlistRemove, alphaLeaderboard, alphaWallet, alphaLinked, tokenCapTable, tokenBuyerQuality, tokenRisk, tokenRiskBatch, tokenBundle, tokenPools, tokenDepth, tokenHolders, tokenLocks, tokenLocksFeed, tokenUnlocks, tokenFeeShares, tokenFeeClaims, tokenSurges, tokenCandles, tokenFlow, tokenTopTraders, tokenTrades, tokenBundles, tokenBundleShare, kolTokenTrades, deployerHistory, deployerAsOf, deployerRewards, deployerStats, deployerLeaderboard, deployerProfile, deployerTokens, deployerAlertStats, deployerBestTokens, deployerRecentBonds, copyTradeList, copyTradeCreate, copyTradeGet, copyTradeUpdate, copyTradeDelete, copyTradeSignals, coordinationAlertsList, coordinationAlertsCreate, coordinationAlertsGet, coordinationAlertsUpdate, coordinationAlertsDelete, kolFirstTouches, firstTouchSubscriptionsList, firstTouchSubscriptionsCreate, firstTouchSubscriptionsGet, firstTouchSubscriptionsUpdate, firstTouchSubscriptionsDelete, priceAlertsList, priceAlertsCreate, priceAlertsGet, priceAlertsUpdate, priceAlertsDelete, priceAlertsEvents, scoutLeaderboard, coordinationHistory, kolConsensus, peakHistory, walletStats, walletPnl, walletPositions, walletHoldings, walletTrades, walletClassify, me, tokensList, almostBonded } from "./tools/index.js";
 import { walletStatsAction, walletPnlAction, walletPositionsAction, walletHoldingsAction, walletTradesAction } from "./actions/wallet.js";
 declare const MadeOnSolPlugin: {
     name: string;
@@ -89,6 +91,9 @@ declare const MadeOnSolPlugin: {
         tokenFlow: typeof tokenFlow;
         tokenTopTraders: typeof tokenTopTraders;
         tokenTrades: typeof tokenTrades;
+        tokenBundles: typeof tokenBundles;
+        tokenBundleShare: typeof tokenBundleShare;
+        kolTokenTrades: typeof kolTokenTrades;
         deployerHistory: typeof deployerHistory;
         deployerAsOf: typeof deployerAsOf;
         deployerRewards: typeof deployerRewards;
@@ -1106,6 +1111,146 @@ declare const MadeOnSolPlugin: {
         }>;
         handler: (agent: unknown, input: {
             mint: string;
+        }) => Promise<{
+            status: string;
+            result: any;
+            message?: undefined;
+        } | {
+            status: string;
+            message: string;
+            result?: undefined;
+        }>;
+    } | {
+        name: string;
+        similes: string[];
+        description: string;
+        examples: {
+            input: {
+                mint: string;
+                window: string;
+            };
+            output: {
+                status: string;
+            };
+            explanation: string;
+        }[][];
+        schema: import("zod").ZodObject<{
+            mint: import("zod").ZodString;
+            window: import("zod").ZodOptional<import("zod").ZodEnum<["1h", "6h", "24h"]>>;
+            min_wallets: import("zod").ZodOptional<import("zod").ZodNumber>;
+            limit: import("zod").ZodOptional<import("zod").ZodNumber>;
+            include_balances: import("zod").ZodOptional<import("zod").ZodBoolean>;
+        }, "strip", import("zod").ZodTypeAny, {
+            mint: string;
+            limit?: number | undefined;
+            window?: "1h" | "6h" | "24h" | undefined;
+            min_wallets?: number | undefined;
+            include_balances?: boolean | undefined;
+        }, {
+            mint: string;
+            limit?: number | undefined;
+            window?: "1h" | "6h" | "24h" | undefined;
+            min_wallets?: number | undefined;
+            include_balances?: boolean | undefined;
+        }>;
+        handler: (agent: unknown, input: {
+            mint: string;
+            window?: "1h" | "6h" | "24h";
+            min_wallets?: number;
+            limit?: number;
+            include_balances?: boolean;
+        }) => Promise<{
+            status: string;
+            result: any;
+            message?: undefined;
+        } | {
+            status: string;
+            message: string;
+            result?: undefined;
+        }>;
+    } | {
+        name: string;
+        similes: string[];
+        description: string;
+        examples: {
+            input: {
+                mint: string;
+            };
+            output: {
+                status: string;
+            };
+            explanation: string;
+        }[][];
+        schema: import("zod").ZodObject<{
+            mint: import("zod").ZodString;
+            window: import("zod").ZodOptional<import("zod").ZodEnum<["1h", "6h", "24h"]>>;
+            min_wallets: import("zod").ZodOptional<import("zod").ZodNumber>;
+        }, "strip", import("zod").ZodTypeAny, {
+            mint: string;
+            window?: "1h" | "6h" | "24h" | undefined;
+            min_wallets?: number | undefined;
+        }, {
+            mint: string;
+            window?: "1h" | "6h" | "24h" | undefined;
+            min_wallets?: number | undefined;
+        }>;
+        handler: (agent: unknown, input: {
+            mint: string;
+            window?: "1h" | "6h" | "24h";
+            min_wallets?: number;
+        }) => Promise<{
+            status: string;
+            result: any;
+            message?: undefined;
+        } | {
+            status: string;
+            message: string;
+            result?: undefined;
+        }>;
+    } | {
+        name: string;
+        similes: string[];
+        description: string;
+        examples: {
+            input: {
+                mint: string;
+                action: string;
+                limit: number;
+            };
+            output: {
+                status: string;
+            };
+            explanation: string;
+        }[][];
+        schema: import("zod").ZodObject<{
+            mint: import("zod").ZodString;
+            limit: import("zod").ZodOptional<import("zod").ZodNumber>;
+            action: import("zod").ZodOptional<import("zod").ZodEnum<["buy", "sell"]>>;
+            kol: import("zod").ZodOptional<import("zod").ZodString>;
+            since: import("zod").ZodOptional<import("zod").ZodString>;
+            cursor: import("zod").ZodOptional<import("zod").ZodString>;
+        }, "strip", import("zod").ZodTypeAny, {
+            mint: string;
+            limit?: number | undefined;
+            since?: string | undefined;
+            action?: "buy" | "sell" | undefined;
+            cursor?: string | undefined;
+            kol?: string | undefined;
+        }, {
+            mint: string;
+            limit?: number | undefined;
+            since?: string | undefined;
+            action?: "buy" | "sell" | undefined;
+            cursor?: string | undefined;
+            kol?: string | undefined;
+        }>;
+        handler: (agent: unknown, input: {
+            mint: string;
+            limit?: number;
+            action?: "buy" | "sell";
+            kol?: string;
+            since?: string;
+            cursor?: string;
         }) => Promise<{
             status: string;
             result: any;
@@ -2140,10 +2285,10 @@ declare const MadeOnSolPlugin: {
     initialize(_agent: unknown): void;
 };
 export default MadeOnSolPlugin;
-export { kolFeed, kolCoordination, kolLeaderboard, deployerAlerts, kolPnl, kolTrendingTokens, kolTokenEntryOrder, kolCompare, kolAlertsRecent, createWebhook, listWebhooks, deleteWebhook, updateWebhook, testWebhook, getStreamToken, streamSessions, streamSessionKill, walletTrackerWatchlist, walletTrackerAdd, walletTrackerRemove, walletTrackerRelabel, walletTrackerTrades, walletTrackerSummary, sniperRecent, sniperByDeployer, sniperWatchlist, sniperWatchlistAdd, sniperWatchlistRemove, alphaLeaderboard, alphaWallet, alphaLinked, tokenCapTable, tokenBuyerQuality, tokenRisk, tokenRiskBatch, tokenBundle, tokenPools, tokenDepth, tokenHolders, tokenLocks, tokenLocksFeed, tokenUnlocks, tokenFeeShares, tokenFeeClaims, tokenSurges, tokenCandles, tokenFlow, tokenTopTraders, tokenTrades, deployerHistory, deployerAsOf, deployerRewards, deployerStats, deployerLeaderboard, deployerProfile, deployerTokens, deployerAlertStats, deployerBestTokens, deployerRecentBonds, copyTradeList, copyTradeCreate, copyTradeGet, copyTradeUpdate, copyTradeDelete, copyTradeSignals, coordinationAlertsList, coordinationAlertsCreate, coordinationAlertsGet, coordinationAlertsUpdate, coordinationAlertsDelete, kolFirstTouches, firstTouchSubscriptionsList, firstTouchSubscriptionsCreate, firstTouchSubscriptionsGet, firstTouchSubscriptionsUpdate, firstTouchSubscriptionsDelete, priceAlertsList, priceAlertsCreate, priceAlertsGet, priceAlertsUpdate, priceAlertsDelete, priceAlertsEvents, scoutLeaderboard, coordinationHistory, kolConsensus, peakHistory, walletStats, walletPnl, walletPositions, walletHoldings, walletTrades, walletClassify, me, tokensList, almostBonded, };
+export { kolFeed, kolCoordination, kolLeaderboard, deployerAlerts, kolPnl, kolTrendingTokens, kolTokenEntryOrder, kolCompare, kolAlertsRecent, createWebhook, listWebhooks, deleteWebhook, updateWebhook, testWebhook, getStreamToken, streamSessions, streamSessionKill, walletTrackerWatchlist, walletTrackerAdd, walletTrackerRemove, walletTrackerRelabel, walletTrackerTrades, walletTrackerSummary, sniperRecent, sniperByDeployer, sniperWatchlist, sniperWatchlistAdd, sniperWatchlistRemove, alphaLeaderboard, alphaWallet, alphaLinked, tokenCapTable, tokenBuyerQuality, tokenRisk, tokenRiskBatch, tokenBundle, tokenPools, tokenDepth, tokenHolders, tokenLocks, tokenLocksFeed, tokenUnlocks, tokenFeeShares, tokenFeeClaims, tokenSurges, tokenCandles, tokenFlow, tokenTopTraders, tokenTrades, tokenBundles, tokenBundleShare, kolTokenTrades, deployerHistory, deployerAsOf, deployerRewards, deployerStats, deployerLeaderboard, deployerProfile, deployerTokens, deployerAlertStats, deployerBestTokens, deployerRecentBonds, copyTradeList, copyTradeCreate, copyTradeGet, copyTradeUpdate, copyTradeDelete, copyTradeSignals, coordinationAlertsList, coordinationAlertsCreate, coordinationAlertsGet, coordinationAlertsUpdate, coordinationAlertsDelete, kolFirstTouches, firstTouchSubscriptionsList, firstTouchSubscriptionsCreate, firstTouchSubscriptionsGet, firstTouchSubscriptionsUpdate, firstTouchSubscriptionsDelete, priceAlertsList, priceAlertsCreate, priceAlertsGet, priceAlertsUpdate, priceAlertsDelete, priceAlertsEvents, scoutLeaderboard, coordinationHistory, kolConsensus, peakHistory, walletStats, walletPnl, walletPositions, walletHoldings, walletTrades, walletClassify, me, tokensList, almostBonded, };
 export { kolFeedAction, kolCoordinationAction, kolLeaderboardAction, deployerAlertsAction, kolPnlAction, kolTrendingTokensAction, kolTokenEntryOrderAction, kolCompareAction, kolAlertsRecentAction, kolFirstTouchesAction };
 export { walletTrackerWatchlistAction, walletTrackerAddAction, walletTrackerRemoveAction, walletTrackerRelabelAction, walletTrackerTradesAction, walletTrackerSummaryAction };
 export { sniperRecentAction, sniperByDeployerAction, sniperWatchlistAction, sniperWatchlistAddAction, sniperWatchlistRemoveAction };
 export { walletStatsAction, walletPnlAction, walletPositionsAction, walletHoldingsAction, walletTradesAction };
-export { meAction, tokensListAction, almostBondedAction, tokenRiskAction, tokenRiskBatchAction, tokenBundleAction, tokenPoolsAction, tokenDepthAction, tokenHoldersAction, tokenLocksAction, tokenLocksFeedAction, tokenUnlocksAction, tokenFeeSharesAction, tokenFeeClaimsAction, tokenSurgesAction, deployerHistoryAction, deployerAsOfAction, deployerRewardsAction, deployerStatsAction, deployerLeaderboardAction, deployerProfileAction, deployerTokensAction, deployerAlertStatsAction, deployerBestTokensAction, deployerRecentBondsAction, tokenCandlesAction, tokenFlowAction, tokenTopTradersAction, tokenTradesAction, walletClassifyAction, streamSessionsAction, streamSessionKillAction };
+export { meAction, tokensListAction, almostBondedAction, tokenRiskAction, tokenRiskBatchAction, tokenBundleAction, tokenPoolsAction, tokenDepthAction, tokenHoldersAction, tokenLocksAction, tokenLocksFeedAction, tokenUnlocksAction, tokenFeeSharesAction, tokenFeeClaimsAction, tokenSurgesAction, deployerHistoryAction, deployerAsOfAction, deployerRewardsAction, deployerStatsAction, deployerLeaderboardAction, deployerProfileAction, deployerTokensAction, deployerAlertStatsAction, deployerBestTokensAction, deployerRecentBondsAction, tokenCandlesAction, tokenFlowAction, tokenTopTradersAction, tokenTradesAction, tokenBundlesAction, tokenBundleShareAction, kolTokenTradesAction, walletClassifyAction, streamSessionsAction, streamSessionKillAction };
 export { getAuthorizedPaymentAmount } from "./tools/index.js";

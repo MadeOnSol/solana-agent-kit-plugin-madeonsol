@@ -664,6 +664,52 @@ export async function tokenBundle(agent: Agent, params: { mint: string }) {
   return restQuery(agent, "GET", `/tokens/${encodeURIComponent(params.mint)}/bundle`);
 }
 
+/**
+ * Every coordinated buy cluster on a token in a window, launch AND later (GET /tokens/{mint}/bundles):
+ * slots where at least `min_wallets` distinct wallets bought. Only stored buys count (0.05 SOL /
+ * $3.50 stable-leg floor); `summary.baseline` gives buys per active slot, so a cluster is evidence,
+ * not a verdict. `include_balances` adds `held_now` to the 3 most recent clusters. PRO+, API key only.
+ */
+export async function tokenBundles(agent: Agent, params: { mint: string; window?: "1h" | "6h" | "24h"; min_wallets?: number; limit?: number; include_balances?: boolean }) {
+  const qs = new URLSearchParams();
+  if (params.window !== undefined) qs.set("window", params.window);
+  if (params.min_wallets !== undefined) qs.set("min_wallets", String(params.min_wallets));
+  if (params.limit !== undefined) qs.set("limit", String(params.limit));
+  if (params.include_balances !== undefined) qs.set("include_balances", String(params.include_balances));
+  const query = qs.toString() ? `?${qs.toString()}` : "";
+  return restQuery(agent, "GET", `/tokens/${encodeURIComponent(params.mint)}/bundles${query}`);
+}
+
+/**
+ * One figure (GET /tokens/{mint}/bundle-share): `bundled_pct_of_supply_now`, the share of supply held
+ * now by every bundle wallet (launch bundle plus the window's clusters, each wallet once), from chain
+ * balances. Null with `held_now.incomplete_reason` unless every wallet was read, never a partial sum.
+ * Cached 30 s per token. PRO+, API key only.
+ */
+export async function tokenBundleShare(agent: Agent, params: { mint: string; window?: "1h" | "6h" | "24h"; min_wallets?: number }) {
+  const qs = new URLSearchParams();
+  if (params.window !== undefined) qs.set("window", params.window);
+  if (params.min_wallets !== undefined) qs.set("min_wallets", String(params.min_wallets));
+  const query = qs.toString() ? `?${qs.toString()}` : "";
+  return restQuery(agent, "GET", `/tokens/${encodeURIComponent(params.mint)}/bundle-share${query}`);
+}
+
+/**
+ * Every stored KOL trade on one token, newest first, keyset paged with `next_cursor`
+ * (GET /kol/tokens/{mint}/trades). BASIC: 5-minute delay, 20 rows. KOL trades below the persistence
+ * floor are not stored. `since` is an ISO timestamp, `kol` a KOL wallet. API key only.
+ */
+export async function kolTokenTrades(agent: Agent, params: { mint: string; limit?: number; action?: "buy" | "sell"; kol?: string; since?: string; cursor?: string }) {
+  const qs = new URLSearchParams();
+  if (params.limit !== undefined) qs.set("limit", String(params.limit));
+  if (params.action !== undefined) qs.set("action", params.action);
+  if (params.kol !== undefined) qs.set("kol", params.kol);
+  if (params.since !== undefined) qs.set("since", params.since);
+  if (params.cursor !== undefined) qs.set("cursor", params.cursor);
+  const query = qs.toString() ? `?${qs.toString()}` : "";
+  return restQuery(agent, "GET", `/kol/tokens/${encodeURIComponent(params.mint)}/trades${query}`);
+}
+
 /** Per-venue liquidity map: every DEX pool a token trades in (live vs parked), plus fragmentation + top-pool share. Returns `pools[]` ({ pool_address, dex, quote_mint, liquidity_usd, last_price_sol, last_swap_at, amm_id, is_active }) and a `summary` ({ pool_count, active_pool_count, dex_count, dexes, total_liquidity_usd, primary_pool, primary_dex, top_pool_share_pct }). PRO/ULTRA only. */
 export async function tokenPools(agent: Agent, params: { mint: string }) {
   return restQuery(agent, "GET", `/tokens/${encodeURIComponent(params.mint)}/pools`);
